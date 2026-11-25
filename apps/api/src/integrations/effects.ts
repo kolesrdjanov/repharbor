@@ -21,7 +21,13 @@ export async function classifyEffect(tx: Prisma.TransactionClient, effect: SaleE
       take: 2,
     });
     if (originals.length > 1) return markForReview(tx, effect, 'REFUND_ALLOCATION_UNKNOWN');
-    if (!originals.length) return;
+    if (!originals.length) {
+      const currencyMismatch = await tx.saleEffect.findFirst({ where: {
+        connectionId: effect.connectionId, kind: 'collection', originalExternalKey: effect.originalExternalKey,
+      }, select: { id: true } });
+      if (currencyMismatch) return markForReview(tx, effect, 'REFUND_CURRENCY_MISMATCH');
+      return;
+    }
     const original = originals[0];
     await tx.saleEffect.update({
       where: { id: effect.id }, data: {
@@ -31,14 +37,13 @@ export async function classifyEffect(tx: Prisma.TransactionClient, effect: SaleE
     });
     return;
   }
-  if (effect.basisMinor === null) return markForReview(tx, effect, 'BASIS_UNKNOWN');
   const mapping = await tx.productMapping.findUnique({
     where: { connectionId_externalProduct_channel: {
       connectionId: effect.connectionId, externalProduct: effect.externalProduct, channel: effect.channel,
     } },
     include: { connection: { select: { environment: true } } },
   });
-  if (!mapping) return markForReview(tx, effect, 'PRODUCT_UNMAPPED');
+  if (!mapping) return markForReview(tx, effect, effect.basisMinor === null ? 'BASIS_UNKNOWN' : 'PRODUCT_UNMAPPED');
   const authority = await tx.sourceAuthority.findUnique({ where: { productId_channel_environment: {
     productId: mapping.productId, channel: effect.channel, environment: mapping.connection.environment,
   } } });
@@ -46,5 +51,5 @@ export async function classifyEffect(tx: Prisma.TransactionClient, effect: SaleE
     await tx.saleEffect.update({ where: { id: effect.id }, data: { disposition: 'secondary' } });
     return;
   }
-  return markForReview(tx, effect, 'CUSTOMER_UNMATCHED');
+  return markForReview(tx, effect, effect.basisMinor === null ? 'BASIS_UNKNOWN' : 'CUSTOMER_UNMATCHED');
 }

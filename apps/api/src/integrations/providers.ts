@@ -3,22 +3,24 @@ import type { Connection } from '@prisma/client';
 import { providerCredentials, providerEnvironment, providerName } from '@repharbor/contracts';
 import { seal, unseal } from '../auth/secrets';
 import { readConfiguration } from '../config';
-import { ApiError } from '../http';
 import type { Credentials, Provider, ProviderAdapter, Source } from './provider';
+import { DodoAdapter } from './providers/dodo';
+import { WhopAdapter } from './providers/whop';
+import { RevenueCatAdapter } from './providers/revenuecat';
 import { StripeAdapter } from './providers/stripe';
 
 @Injectable()
 export class Providers {
   private readonly config = readConfiguration();
   private readonly key = Buffer.from(this.config.SECRET_ENCRYPTION_KEY, 'base64');
-  private readonly adapters: Partial<Record<Provider, ProviderAdapter>> = {
-    stripe: new StripeAdapter(this.config.ALLOW_LOCAL_PROVIDER_FIXTURES === 'true'),
+  private readonly local = this.config.ALLOW_LOCAL_PROVIDER_FIXTURES === 'true';
+  private readonly adapters: Record<Provider, ProviderAdapter> = {
+    stripe: new StripeAdapter(this.local), dodo: new DodoAdapter(this.local),
+    whop: new WhopAdapter(this.local), revenuecat: new RevenueCatAdapter(this.local),
   };
 
   forProvider(name: Provider) {
-    const adapter = this.adapters[name];
-    if (!adapter) throw new ApiError(422, 'PROVIDER_UNAVAILABLE', 'This provider is unavailable in this environment.');
-    return adapter;
+    return this.adapters[name];
   }
 
   source(row: Connection): Source {

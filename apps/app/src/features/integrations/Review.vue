@@ -25,6 +25,8 @@ const reasons: Record<string, string> = {
   COLLECTION_UNVERIFIED: 'Collection could not be verified',
   REFUND_ALLOCATION_UNKNOWN: 'Refund could match multiple sale lines',
   REFUND_BASIS_UNKNOWN: 'Refund basis needs review',
+  REFUND_CURRENCY_MISMATCH: 'Refund currency differs from the original collection',
+  PRODUCT_ALLOCATION_UNKNOWN: 'Several products share an unallocated payment',
 };
 async function saved(item: components['schemas']['ReviewItem']) {
   resolved.value = item;

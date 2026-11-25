@@ -14,3 +14,15 @@ This is an interim audit for I3 and the Stripe ingestion portion of P1 in the co
 Ledger posting and source assignment are still due in L4/F5. The local run modeled webhook/backfill overlap as a second event for the same financial identity. Provider-controlled history and sandbox credentials have yet to be exercised. P2–P4 remain open until the Stripe statement slice works.
 
 Next step is L4/F5. Add customer links and append-only ledger storage, then post the linked collection and refund from the worker and founder review path.
+
+## P2–P4 adapter audit
+
+The adapter follow-up commit completed the local webhook scenarios below. Each provider guide records credential and coverage requirements.
+
+| Adapter | Implementation | Local observation |
+|---|---|---|
+| Dodo Payments | `apps/api/src/integrations/providers/dodo.ts` | A signed paid renewal yielded one collection. A failed payment yielded none. A refund delivered first linked to the payment after it arrived. Missing tax stayed reviewable. |
+| Whop | `apps/api/src/integrations/providers/whop.ts` | A different signed account received 403. A replay did not create another effect. A membership ending produced no financial effect. The refund linked to the original payment. |
+| RevenueCat | `apps/api/src/integrations/providers/revenuecat.ts` | The same mobile renewal reported under two event IDs yielded one effect. Unsubscribe produced no refund. Refund and refund reversal were kept for review, and the overlapping web sale was marked secondary. A production event on the sandbox connection received 403. |
+
+The next unresolved checks are provider-controlled delivery and history. Dodo, Whop, Stripe and RevenueCat each need sandbox credentials and records. RevenueCat collections need exact basis evidence before automatic posting. The application and API continue to expose these cases for review.
