@@ -1,0 +1,12 @@
+name = "repharbor-site"
+compatibility_date = "2026-11-25"
+workers_dev = false
+
+[assets]
+directory = "./.output/public"
+html_handling = "drop-trailing-slash"
+not_found_handling = "404-page"
+
+[[routes]]
+pattern = "repharbor.io"
+custom_domain = true

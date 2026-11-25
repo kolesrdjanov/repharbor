@@ -1,0 +1,32 @@
+@import "../../node_modules/tailwindcss/index.css";
+
+@theme inline {
+  --font-sans: "Instrument Sans Variable", system-ui, sans-serif;
+  --color-background: oklch(0.978 0 0);
+  --color-foreground: oklch(0.145 0 0);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.16 0 0);
+  --color-muted: oklch(0.945 0 0);
+  --color-muted-foreground: oklch(0.42 0 0);
+  --color-border: oklch(0.865 0 0);
+  --color-input: oklch(0.68 0 0);
+  --color-primary: oklch(0.16 0 0);
+  --color-primary-foreground: oklch(0.99 0 0);
+  --color-secondary: oklch(0.945 0 0);
+  --color-secondary-foreground: oklch(0.2 0 0);
+  --color-accent: oklch(0.915 0 0);
+  --color-accent-foreground: oklch(0.17 0 0);
+  --color-destructive: oklch(0.18 0 0);
+  --color-ring: oklch(0.45 0 0);
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background font-sans text-foreground antialiased; }
+  a[aria-current="page"] { @apply underline underline-offset-4; }
+  :where(a, button):focus-visible { @apply outline-2 outline-offset-4 outline-ring; }
+}
+
+@utility page-width {
+  @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+}

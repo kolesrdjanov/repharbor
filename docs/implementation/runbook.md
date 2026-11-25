@@ -25,3 +25,7 @@ docker compose exec -T postgres pg_restore -U repharbor -d repharbor_restore --e
 ```
 
 Point a separate test process at the restored database and replay a retained signed event. Verify that the reference engagement stays at EUR 230.00. When a rollout fails, pause the worker and restore the last API, worker and static app versions that support the current schema. Fix forward after an incompatible migration or arrange an authorized recovery from the backup. Never write a restore over an active pilot database.
+
+## Public website release
+
+From the repository root, run `pnpm contracts:build` and `pnpm --filter @repharbor/site build`. The prerendered output includes public HTML, a sitemap, and robots policy. Build with the production origins or set `NUXT_PUBLIC_SITE_ORIGIN` and `NUXT_PUBLIC_APP_ORIGIN` for a test environment. Review the static output and `apps/site/wrangler.toml` before approving the separate public hostname release. After promotion, check the canonical URL, all provider pages, and the handoff to live sign-in.

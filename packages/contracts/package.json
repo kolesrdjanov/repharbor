@@ -19,6 +19,11 @@
       "types": "./dist/index.d.ts",
       "browser": "./src/index.ts",
       "default": "./dist/index.js"
+    },
+    "./reference": {
+      "types": "./dist/reference.d.ts",
+      "browser": "./src/reference.ts",
+      "default": "./dist/reference.js"
     }
   }
 }

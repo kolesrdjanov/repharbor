@@ -1,6 +1,11 @@
 node_modules/
-dist/
+dist
 .env
 .env.*
 !.env.example
 *.tsbuildinfo
+.nuxt/
+.output/
+.wrangler/
+coverage/
+test-results/
