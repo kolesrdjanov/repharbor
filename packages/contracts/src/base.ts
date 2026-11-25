@@ -95,6 +95,7 @@ export const entry = z.strictObject({
 });
 export const statement = z.strictObject({
   engagementId: id, asOf: timestamp, balances: z.array(balance), entries: page(entry),
+  coverageIncomplete: z.literal(true).optional(),
 });
 export const recordExternalPayment = z.strictObject({
   currency, amountMinor: positiveMinor, paidOn: localDate, reference: text.optional(),

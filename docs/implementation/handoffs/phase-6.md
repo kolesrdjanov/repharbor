@@ -12,4 +12,8 @@ This audit reviews O6 and S6 in the commit that introduced this file and the loc
 
 Pending external evidence belongs to the founder and release operator. A real pilot needs an agreed product and terms, an approved opening balance and coverage start, and one monthly statement reconciled with both participants. Deployed Resend sign-in needs a verified sender, API key, and approved deployment. Sandbox provider proof needs account-specific test credentials and historical records. Hosted subscription checkout needs a separate Stripe test account, price and configured portal. Keep live checkout disabled until commercial approval.
 
-The local app and release rehearsal are available for public site development. W7 is the next repository task. Production and pilot evidence remain open.
+The billing test now exercises the real Stripe SDK against a loopback server. It verifies that the founder's Checkout and Portal requests use the separate platform customer, price and account credential. A retry reuses the Stripe idempotency key. Unauthorized requests never reach Stripe. Opening and completing a hosted session and observing the resulting provider webhook still require the Stripe test account.
+
+For the first real monthly statement, record the approved product, provider, coverage start, opening amount by currency, time zone, due rule, commission basis, and refund and amendment policy. Compare sale and refund IDs to statement lines, external payments to the founder's records, and the ending balance and due date across both sessions. Record the number of manual matches, elapsed time to agreement, and any unresolved item with its owner. Keep only anonymized examples in the repository.
+
+See [phase 7](phase-7.md) for the website audit. The external pilot evidence remains open.

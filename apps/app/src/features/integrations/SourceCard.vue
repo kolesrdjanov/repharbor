@@ -29,7 +29,7 @@ const { data, busy, error, reload } = useQuery(async (signal) => {
     loadAll((cursor) => coverage(props.companyId, props.source.id, cursor, signal)),
   ]);
   rows.value = current;
-  return gaps;
+  return gaps.filter((gap) => !gap.resolvedAt);
 });
 watch(open, (value) => { if (value) void reload(); });
 

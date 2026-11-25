@@ -81,6 +81,7 @@ CREATE TABLE connection (
   environment text NOT NULL CHECK(environment IN ('test','live')), external_account text NOT NULL,
   secret_ref text NOT NULL, status text NOT NULL CHECK(status IN ('pending','active','degraded','disconnected')),
   coverage_from timestamptz, last_delivery_at timestamptz, reconciled_at timestamptz, import_cursor text,
+  reconciled_through timestamptz, next_reconciliation_at timestamptz,
   UNIQUE(provider,environment,external_account), UNIQUE(company_id,id)
 );
 CREATE TABLE product_mapping (

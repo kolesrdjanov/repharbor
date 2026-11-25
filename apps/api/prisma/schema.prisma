@@ -253,6 +253,8 @@ model Connection {
   coverageFrom    DateTime? @map("coverage_from") @db.Timestamptz(6)
   lastDeliveryAt  DateTime? @map("last_delivery_at") @db.Timestamptz(6)
   reconciledAt    DateTime? @map("reconciled_at") @db.Timestamptz(6)
+  reconciledThrough DateTime? @map("reconciled_through") @db.Timestamptz(6)
+  nextReconciliationAt DateTime? @map("next_reconciliation_at") @db.Timestamptz(6)
   importCursor    String? @map("import_cursor")
   company         Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   mappings        ProductMapping[]

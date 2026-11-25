@@ -69,7 +69,7 @@ export class Connections {
     return this.db.$transaction(async (tx) => {
       await requireConnection(tx, actor, companyId, id);
       const updated = await tx.connection.update({
-        where: { id }, data: { secretRef: this.providers.encrypt(credentials), status: 'pending' },
+        where: { id }, data: { secretRef: this.providers.encrypt(credentials), status: 'pending', nextReconciliationAt: null },
       });
       await audit(tx, actor, companyId, 'connection', id, 'reconnect');
       return viewConnection(updated);

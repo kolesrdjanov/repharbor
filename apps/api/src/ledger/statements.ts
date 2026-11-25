@@ -89,7 +89,8 @@ export function summarizeLedger(rows: EntryView[], cutoff: Date, zone: string) {
 
 @Injectable()
 export class Statements {
-  private readonly environment = readConfiguration().SALES_ENVIRONMENT;
+  private readonly config = readConfiguration();
+  private readonly environment = this.config.SALES_ENVIRONMENT;
 
   constructor(private readonly db: Database) {}
 
@@ -107,18 +108,34 @@ export class Statements {
     const where = {
       engagementId, environment: this.environment, currency: query.currency, effectiveAt: { lte: cutoff }, postedAt: { lte: cutoff },
     } satisfies Prisma.LedgerEntryWhereInput;
-    const [rows, totals] = await this.db.$transaction([
+    const interval = this.config.SALES_RECONCILIATION_INTERVAL_SECONDS;
+    const oldestExpectedSync = new Date(Date.now() - (interval + 3_600) * 1_000);
+    const [rows, totals, incompleteSource] = await this.db.$transaction([
       this.db.ledgerEntry.findMany({
         where, include: details,
         orderBy: [{ effectiveAt: 'desc' }, { id: 'desc' }],
         ...(cursor && { cursor: { id: cursor }, skip: 1 }), take: query.limit + 1,
       }),
       this.db.ledgerEntry.findMany({ where, include: details }),
+      this.db.sourceAuthority.findFirst({
+        where: {
+          companyId: item.companyId, productId: item.productId, environment: this.environment,
+          connection: { OR: [
+            { status: { not: 'active' } },
+            { gaps: { some: { resolvedAt: null, startsAt: { lte: cutoff } } } },
+            ...(interval ? [{
+              provider: { in: ['stripe', 'dodo', 'whop'] }, reconciledAt: { lt: oldestExpectedSync },
+            }] : []),
+          ] },
+        },
+        select: { productId: true },
+      }),
     ], { isolationLevel: 'RepeatableRead' });
     const entries = paginated(rows, query.limit, scope, viewEntry);
     if (entries.nextCursor) entries.nextCursor = `${snapshot}~${entries.nextCursor}`;
     return statement.parse({
       engagementId, asOf: snapshot, balances: summarizeLedger(totals, cutoff, item.product.company.timeZone), entries,
+      ...(incompleteSource && { coverageIncomplete: true }),
     });
   }
 

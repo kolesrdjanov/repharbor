@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
-import { backend, emailLink, launch, messages, port, until } from '../../api/test/harness.mjs';
+import { backend, call, emailLink, launch, messages, port, until } from '../../api/test/harness.mjs';
 import { scenario, sendStripe } from '../../api/test/scenario.mjs';
 
 async function signIn(browser, page, target, email, scan = false) {
@@ -98,6 +99,20 @@ test('independent founder and rep sessions, payment recovery, matching statement
     await page.getByText('-€20.00', { exact: true }).waitFor();
     await page.getByRole('link', { name: 'View related entry' }).click();
     await page.getByText('20%', { exact: true }).waitFor();
+  }
+
+  const connection = `${fixture.co}/connections/${fixture.connection.id}`;
+  await call(runtime, fixture.founder, 'POST', connection + '/backfills', {
+    start: new Date(Date.now() - 86_400_000).toISOString(), end: new Date(Date.now() - 60_000).toISOString(),
+  }, 202, randomUUID());
+  await until(async () => {
+    const { body } = await call(runtime, fixture.founder, 'GET', connection + '/coverage');
+    return body.items.some(({ reason }) => reason === 'HISTORY_UNAVAILABLE');
+  }, 'Expected a coverage gap after the unsupported fixture import');
+  for (const page of [founder, rep]) {
+    await page.goto(target);
+    await page.getByRole('status').getByText('Sales data may be incomplete.', { exact: false }).waitFor();
+    await page.getByText('€230.00', { exact: true }).waitFor();
   }
   const signInHeading = rep.getByRole('heading', { name: 'Sign in to RepHarbor' });
   await rep.getByRole('button', { name: 'Sign out' }).click();

@@ -40,11 +40,12 @@ export function launch(cmd, args, cwd, env) {
     child.once('exit', (code) => { done = true; resolve(code); });
   });
   return {
-    async finish() {
-      assert.equal(await exited, 0, output);
+    async finish(expected = 0) {
+      assert.equal(await exited, expected, output);
+      return output;
     },
-    async stop() {
-      if (!done) child.kill();
+    async stop(signal) {
+      if (!done) child.kill(signal);
       await exited;
     },
     async ready(url) {
@@ -56,7 +57,7 @@ export function launch(cmd, args, cwd, env) {
   };
 }
 
-export async function backend(context, { appOrigin, billing = false } = {}) {
+export async function backend(context, { appOrigin, billing = false, stripeOrigin } = {}) {
   const url = new URL(postgres);
   assert.ok(['127.0.0.1', 'localhost'].includes(url.hostname), 'Tests require a loopback PostgreSQL instance');
   const schema = `test_${randomUUID().replaceAll('-', '')}`;
@@ -72,6 +73,7 @@ export async function backend(context, { appOrigin, billing = false } = {}) {
     SESSION_TTL_SECONDS: '3600', SECRET_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
     MAIL_TRANSPORT: 'smtp', MAIL_FROM: 'login@repharbor.test', SMTP_URL: 'smtp://127.0.0.1:1025',
     SALES_ENVIRONMENT: 'test', ALLOW_LOCAL_PROVIDER_FIXTURES: 'true',
+    SALES_RECONCILIATION_INTERVAL_SECONDS: '0',
     BILLING_ENABLED: String(billing), BILLING_ENVIRONMENT: 'test',
     BILLING_STRIPE_KEY: 'sk_test_fixture_placeholder', BILLING_WEBHOOK_SECRET: 'whsec_billingfixture', BILLING_PRICE_ID: 'price_fixture',
   };
@@ -82,11 +84,23 @@ export async function backend(context, { appOrigin, billing = false } = {}) {
     await sql.end();
   });
   await launch(process.execPath, ['node_modules/prisma/build/index.js', 'migrate', 'deploy'], here, env).finish();
-  const api = launch(process.execPath, ['dist/main.js'], here, env);
-  const worker = launch(process.execPath, ['dist/worker.js'], here, env);
-  processes.push(api, worker);
-  await Promise.all([api.ready(origin + '/health'), worker.ready(`http://127.0.0.1:${workerPort}/health`)]);
-  return { origin, app, sql, schema };
+  const preload = stripeOrigin ? ['--import', './test/stripe-http.mjs'] : [];
+  const instanceEnv = { ...env, ...(stripeOrigin && { TEST_STRIPE_ORIGIN: stripeOrigin }) };
+  const api = launch(process.execPath, [...preload, 'dist/main.js'], here, instanceEnv);
+  processes.push(api);
+  let currentWorker;
+  async function startWorker(reconcileEverySeconds = 0) {
+    const worker = launch(process.execPath, [...preload, 'dist/worker.js'], here, {
+      ...instanceEnv, SALES_RECONCILIATION_INTERVAL_SECONDS: String(reconcileEverySeconds),
+    });
+    currentWorker = worker;
+    processes.push(worker);
+    await worker.ready(`http://127.0.0.1:${workerPort}/health`);
+    return worker;
+  }
+  await Promise.all([api.ready(origin + '/health'), startWorker()]);
+  const operations = (args) => launch(process.execPath, ['dist/operations.js', ...args], here, env);
+  return { origin, app, sql, schema, startWorker, stopWorker: (signal) => currentWorker.stop(signal), operations };
 }
 
 export async function messages() {

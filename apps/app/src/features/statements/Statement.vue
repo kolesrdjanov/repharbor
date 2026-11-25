@@ -74,6 +74,9 @@ onMounted(refresh);
       <span>As of {{ new Date(data.statement.asOf).toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' }) }} UTC</span>
       <Button variant="outline" class="h-11" :disabled="busy || pending" @click="refresh">Refresh statement</Button>
     </div>
+    <Alert v-if="data.statement.coverageIncomplete" role="status">
+      <AlertDescription>Sales data may be incomplete. Recent or historical activity may still need reconciliation.</AlertDescription>
+    </Alert>
     <BalanceCards v-if="data.statement.balances.length" :balances="data.statement.balances" />
     <p v-else class="text-sm text-muted-foreground">This engagement has no balance yet.</p>
     <Card>

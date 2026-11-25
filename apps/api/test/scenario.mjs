@@ -15,7 +15,7 @@ export async function sendStripe(runtime, pathname, event, signingSecret = secre
   assert.equal(response.status, expected, await response.text());
 }
 
-export async function scenario(runtime, { earlyRefund = false } = {}) {
+export async function scenario(runtime, { earlyRefund = false, stripeAccount, stripeKey } = {}) {
   const founderEmail = address('founder');
   const repEmail = address('rep');
   const founder = (await signIn(runtime, founderEmail)).cookie;
@@ -38,9 +38,9 @@ export async function scenario(runtime, { earlyRefund = false } = {}) {
   const eng = `/engagements/${accepted.id}`;
   const [draft] = (await call(runtime, rep, 'GET', `${eng}/agreements`)).body.items;
   await call(runtime, rep, 'POST', `${eng}/agreements/${draft.id}/accept`, { revision: draft.revision });
-  const account = `acct_fixture_${randomUUID().replaceAll('-', '')}`;
+  const account = stripeAccount ?? `acct_fixture_${randomUUID().replaceAll('-', '')}`;
   const connection = (await call(runtime, founder, 'POST', `${co}/connections`, {
-    provider: 'stripe', environment: 'test', externalAccount: account, credentials: { webhookSecret: secret },
+    provider: 'stripe', environment: 'test', externalAccount: account, credentials: { webhookSecret: secret, apiKey: stripeKey },
   }, 201)).body;
   await call(runtime, founder, 'PUT', `${co}/connections/${connection.id}/mappings`, {
     items: [{ productId: product.id, externalProduct: 'prod_fixture', channel: 'web', authoritative: true }],
@@ -57,6 +57,7 @@ export async function scenario(runtime, { earlyRefund = false } = {}) {
   if (earlyRefund) await sendStripe(runtime, webhook, refund);
 
   const claims = new Map();
+  const invoices = [];
   for (let index = 1; index <= 10; index++) {
     const customerLabel = `Reference customer ${index}`;
     const claim = (await call(runtime, rep, 'POST', `${eng}/claims`, { customerLabel, contactEmail: `contact${index}@fixture.test` }, 201)).body;
@@ -71,6 +72,7 @@ export async function scenario(runtime, { earlyRefund = false } = {}) {
       payments: { has_more: false, data: [{ status: 'paid', amount_paid: 20_000,
         payment: { type: 'payment_intent', payment_intent: `pi_fixture_${index}` } }] },
     });
+    invoices.push(invoice);
     if (index === 1) {
       await sendStripe(runtime, webhook, invoice, 'whsec_wrong', 401);
       await sendStripe(runtime, webhook, { ...invoice, livemode: true }, secret, 403);
@@ -93,7 +95,7 @@ export async function scenario(runtime, { earlyRefund = false } = {}) {
     currency: 'EUR', amountMinor: '0', asOf: daysAgo(27).slice(0, 10), note: 'Fixture opening balance',
   }, 201, randomUUID())).body;
   await call(runtime, rep, 'POST', `${eng}/opening-balances/${opening.id}/accept`, undefined, 200, randomUUID());
-  return { co, eng, company, founder, rep, founderEmail, repEmail, webhook, refund, payment: {
+  return { co, eng, company, founder, rep, founderEmail, repEmail, connection, webhook, invoices, refund, payment: {
     currency: 'EUR', amountMinor: '15000', paidOn: daysAgo(3).slice(0, 10), reference: 'External fixture payment',
   } };
 }

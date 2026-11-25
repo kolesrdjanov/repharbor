@@ -21,6 +21,7 @@ const configuration = z.object({
   BILLING_WEBHOOK_SECRET: z.string().min(1).optional(),
   BILLING_PRICE_ID: z.string().min(1).optional(),
   SALES_ENVIRONMENT: z.enum(['test', 'live']).default('test'),
+  SALES_RECONCILIATION_INTERVAL_SECONDS: z.coerce.number().int().min(0).max(604_800).default(86_400),
   ALLOW_LOCAL_PROVIDER_FIXTURES: z.enum(['true', 'false']).default('false'),
   WORKER_HEALTH_PORT: port,
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),

@@ -36,13 +36,15 @@ export class Inbox {
     const event = this.providers.forProvider(provider).verifyDelivery(body, headers, source);
     validateSource(row, event);
     await this.db.$transaction(async (tx) => {
-      const locked = await tx.$queryRaw<{ id: string }[]>`
-        SELECT id FROM connection WHERE id = ${id}::uuid AND secret_ref = ${row.secretRef}
+      const [locked] = await tx.$queryRaw<{ status: string }[]>`
+        SELECT status FROM connection WHERE id = ${id}::uuid AND secret_ref = ${row.secretRef}
           AND status <> 'disconnected' FOR UPDATE
       `;
-      if (!locked.length) throw failed();
+      if (!locked) throw failed();
       await enqueueEvent(tx, row, event);
-      await tx.connection.update({ where: { id }, data: { lastDeliveryAt: new Date(), status: 'active' } });
+      await tx.connection.update({
+        where: { id }, data: { lastDeliveryAt: new Date(), status: locked.status === 'pending' ? 'active' : undefined },
+      });
     });
   }
 }

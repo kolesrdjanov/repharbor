@@ -884,6 +884,11 @@ export interface components {
             asOf: string;
             balances: components["schemas"]["Balance"][];
             entries: components["schemas"]["EntryPage"];
+            /**
+             * @description An authoritative source for this product is disconnected, pending, overdue for reconciliation, or has incomplete history.
+             * @constant
+             */
+            coverageIncomplete?: true;
         };
         EngagementSummary: {
             engagement: components["schemas"]["Engagement"];

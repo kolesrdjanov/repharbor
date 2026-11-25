@@ -2958,6 +2958,10 @@ components:
             $ref: '#/components/schemas/Balance'
         entries:
           $ref: '#/components/schemas/EntryPage'
+        coverageIncomplete:
+          type: boolean
+          const: true
+          description: An authoritative source for this product is disconnected, pending, overdue for reconciliation, or has incomplete history.
     EngagementSummary:
       type: object
       additionalProperties: false
