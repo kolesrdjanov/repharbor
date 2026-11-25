@@ -20,6 +20,8 @@ export const router = createRouter({
         { path: 'engagements/:engagementId/claims', name: 'claims', meta: { title: 'Customer claims' }, component: () => import('@/features/engagements/Engagement.vue') },
         { path: 'engagements/:engagementId/statement', name: 'statement', meta: { title: 'Statement' }, component: () => import('@/features/statements/Statement.vue') },
         { path: 'engagements/:engagementId/statement/entries/:entryId', name: 'statement-entry', meta: { title: 'Statement entry' }, component: () => import('@/features/statements/EntryDetail.vue') },
+        { path: 'companies/:companyId/integrations', name: 'integrations', meta: { title: 'Integrations' }, component: () => import('@/features/integrations/Integrations.vue') },
+        { path: 'companies/:companyId/review', name: 'review', meta: { title: 'Sales review' }, component: () => import('@/features/integrations/Review.vue') },
         { path: 'companies/:companyId', name: 'company', meta: { title: 'Company' }, component: () => import('@/features/engagements/Company.vue') },
       ],
     },

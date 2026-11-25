@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Module, Param, Post, Put, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { connectProvider, id, pagination, providerName, reconnectProvider, resolveReview, setMappings } from '@repharbor/contracts';
+import { backfillInput, connectProvider, id, pagination, providerName, reconnectProvider, resolveReview, setMappings } from '@repharbor/contracts';
 import { AuthModule, checkOrigin, sessionCookie } from '../auth/auth.controller';
 import { AuthService } from '../auth/auth.service';
 import { readConfiguration } from '../config';
@@ -8,6 +8,7 @@ import { ApiError, parseInput } from '../http';
 import { Attribution } from './attribution';
 import { Connections } from './connections';
 import { Inbox } from './inbox';
+import { Reconciliation } from './reconciliation';
 import { Providers } from './providers';
 
 @Controller()
@@ -19,6 +20,7 @@ class IntegrationsController {
     private readonly connections: Connections,
     private readonly inbox: Inbox,
     private readonly attribution: Attribution,
+    private readonly reconciliation: Reconciliation,
   ) {}
 
   private async actor(req: Request) {
@@ -68,6 +70,23 @@ class IntegrationsController {
       parseInput(id, connectionId), parseInput(setMappings, body));
   }
 
+  @Get('companies/:companyId/connections/:connectionId/coverage')
+  async coverage(
+    @Req() req: Request, @Param('companyId') companyId: string, @Param('connectionId') connectionId: string, @Query() query: unknown,
+  ) {
+    return this.reconciliation.coverage(await this.actor(req), parseInput(id, companyId), parseInput(id, connectionId),
+      parseInput(pagination, query));
+  }
+
+  @Post('companies/:companyId/connections/:connectionId/backfills')
+  @HttpCode(202)
+  async backfill(
+    @Req() req: Request, @Param('companyId') companyId: string, @Param('connectionId') connectionId: string, @Body() body: unknown,
+  ) {
+    return this.reconciliation.request(await this.actor(req), parseInput(id, companyId), parseInput(id, connectionId),
+      parseInput(id, req.get('Idempotency-Key')), parseInput(backfillInput, body));
+  }
+
   @Get('companies/:companyId/review')
   async review(@Req() req: Request, @Param('companyId') companyId: string, @Query() query: unknown) {
     return this.attribution.list(await this.actor(req), parseInput(id, companyId), parseInput(pagination, query));
@@ -91,6 +110,6 @@ class IntegrationsController {
 }
 
 @Module({
-  imports: [AuthModule], providers: [Providers, Connections, Inbox, Attribution], controllers: [IntegrationsController],
+  imports: [AuthModule], providers: [Providers, Connections, Inbox, Attribution, Reconciliation], controllers: [IntegrationsController],
 })
 export class IntegrationsModule {}

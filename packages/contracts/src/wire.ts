@@ -780,6 +780,10 @@ export interface components {
             resolvedAt?: string;
             currency?: string;
             amountMinor?: string;
+            /** Format: uuid */
+            postedEngagementId?: string;
+            /** Format: uuid */
+            postedEntryId?: string;
         };
         CoverageGap: {
             /** Format: uuid */

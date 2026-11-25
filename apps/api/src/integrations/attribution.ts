@@ -97,7 +97,14 @@ export class Attribution {
         });
         if (existingLink && existingLink.claimId !== claimId) await recomputeClaim(tx, existingLink.claimId, this.environment, actor.userId);
         if (claimId) await recomputeClaim(tx, claimId, this.environment, actor.userId);
-        return this.serialize(tx, resolved);
+        const posted = claimId ? await tx.ledgerEntry.findFirst({
+          where: { companyId, effectId: effect.id, claimId, reversal: null, kind: 'commission' },
+          select: { id: true, engagementId: true },
+        }) : null;
+        return reviewItem.parse({
+          ...await this.serialize(tx, resolved),
+          postedEngagementId: posted?.engagementId, postedEntryId: posted?.id,
+        });
       });
     }, { timeout: 30_000 });
   }

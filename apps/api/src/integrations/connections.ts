@@ -14,7 +14,7 @@ type Pagination = z.infer<typeof pagination>;
 export function viewConnection(row: Connection) {
   return connection.parse({
     id: row.id, companyId: row.companyId, provider: row.provider, environment: row.environment,
-    externalAccount: row.externalAccount, status: row.status, coverageFrom: row.coverageFrom?.toISOString(),
+    externalAccount: `••••${row.externalAccount.length > 4 ? row.externalAccount.slice(-4) : ''}`, status: row.status, coverageFrom: row.coverageFrom?.toISOString(),
     lastDeliveryAt: row.lastDeliveryAt?.toISOString(), reconciledAt: row.reconciledAt?.toISOString(),
   });
 }

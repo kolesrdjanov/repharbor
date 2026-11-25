@@ -24,6 +24,7 @@ export const reviewItem = z.strictObject({
   candidateClaimIds: z.array(id),
   candidateClaims: z.array(z.strictObject({ id, customerLabel: z.string().min(1) })).optional(), resolvedAt: timestamp.optional(),
   currency: currency.optional(), amountMinor: minor.optional(),
+  postedEngagementId: id.optional(), postedEntryId: id.optional(),
 });
 export const resolveReview = z.discriminatedUnion('action', [
   z.strictObject({ action: z.literal('assign_claim'), claimId: id, reason: z.string().trim().min(1).max(1000) }),

@@ -2716,6 +2716,12 @@ components:
         amountMinor:
           type: string
           pattern: ^(0|-?[1-9][0-9]*)$
+        postedEngagementId:
+          type: string
+          format: uuid
+        postedEntryId:
+          type: string
+          format: uuid
     CoverageGap:
       type: object
       additionalProperties: false

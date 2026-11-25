@@ -44,6 +44,10 @@ onMounted(() => { if (company.value) void reload(); });
   <h1 tabindex="-1" class="text-3xl font-semibold tracking-tight focus:outline-none">{{ company?.name ?? 'Company unavailable' }}</h1>
   <p v-if="!company" class="text-sm text-muted-foreground">Choose a company from your workspace.</p>
   <template v-else>
+    <div class="flex flex-wrap gap-2">
+      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'integrations', params: { companyId } }">Integrations</RouterLink></Button>
+      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'review', params: { companyId } }">Review sales</RouterLink></Button>
+    </div>
     <QueryStatus :busy="busy" :error="error" @retry="reload" />
     <EngagementList v-if="data" :items="data.engagements" founder />
     <Card>

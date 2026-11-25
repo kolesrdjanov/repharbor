@@ -4,11 +4,12 @@ import { NestFactory } from '@nestjs/core';
 import { createServer } from 'node:http';
 import { readConfiguration } from './config';
 import { IngestionWorker } from './integrations/ingestion-worker';
+import { ReconciliationWorker } from './integrations/reconciliation';
 import { Providers } from './integrations/providers';
 import { LoginMailWorker } from './auth/login-mail';
 import { Database, DatabaseModule } from './database';
 
-@Module({ imports: [DatabaseModule], providers: [LoginMailWorker, Providers, IngestionWorker] })
+@Module({ imports: [DatabaseModule], providers: [LoginMailWorker, Providers, IngestionWorker, ReconciliationWorker] })
 class WorkerModule {}
 
 async function bootstrap() {
