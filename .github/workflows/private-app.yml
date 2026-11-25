@@ -11,6 +11,7 @@ on:
       - 'apps/api/test/harness.mjs'
       - 'apps/api/test/scenario.mjs'
       - 'packages/contracts/**'
+      - 'packages/ui/**'
       - 'docs/technical/openapi.yaml'
       - 'compose.yaml'
       - '.node-version'

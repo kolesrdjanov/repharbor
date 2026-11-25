@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { components } from '@repharbor/contracts';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@repharbor/ui/components/ui/card';
 import { formatMoney } from './money';
 
 defineProps<{ balances: components['schemas']['Balance'][] }>();

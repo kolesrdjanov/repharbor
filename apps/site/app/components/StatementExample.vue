@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { expectedBalance, proposedAgreement, referencePayment, referenceRefund, referenceSales } from '@repharbor/contracts/reference';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardHeader } from '@repharbor/ui/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repharbor/ui/components/ui/table';
 
 function euro(value: bigint | string) {
   const cents = BigInt(value);
@@ -21,7 +21,7 @@ const rows = [
 </script>
 
 <template>
-  <Card class="h-fit overflow-hidden gap-0 rounded-2xl py-0 shadow-sm">
+  <Card class="h-fit gap-0 py-0">
     <CardHeader class="border-b bg-card px-5 py-6 sm:px-7">
       <p class="text-xs font-medium tracking-[0.12em] text-muted-foreground uppercase">Sample commission statement</p>
       <p class="mt-4 text-sm font-medium text-muted-foreground">Outstanding</p>

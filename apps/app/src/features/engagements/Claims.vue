@@ -3,12 +3,12 @@ import { nextTick, onMounted, ref } from 'vue';
 import type { components } from '@repharbor/contracts';
 import { decideClaim, listClaims, loadAll, registerClaim } from '@/api/engagements';
 import { useMutation, useQuery } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { Textarea } from '@repharbor/ui/components/ui/textarea';
 import QueryStatus from './QueryStatus.vue';
 
 const props = defineProps<{
@@ -66,12 +66,12 @@ onMounted(reload);
   <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
 
   <Card v-if="context.viewerRole === 'rep' && context.engagement.status !== 'closed'">
-    <CardHeader><h2 class="text-lg font-semibold">Register a customer</h2></CardHeader>
+    <CardHeader><CardTitle><h2>Register a customer</h2></CardTitle></CardHeader>
     <CardContent>
       <form class="space-y-4" @submit.prevent="register">
-        <div class="space-y-2"><Label for="customer-name">Customer name</Label><Input id="customer-name" v-model="label" required class="h-11" /></div>
-        <div class="space-y-2"><Label for="contact-email">Contact email (optional)</Label><Input id="contact-email" v-model="email" type="email" class="h-11" /></div>
-        <Button type="submit" :disabled="pending" class="h-11">{{ pending ? 'Registering…' : 'Register claim' }}</Button>
+        <div class="space-y-2"><Label for="customer-name">Customer name</Label><Input id="customer-name" v-model="label" required /></div>
+        <div class="space-y-2"><Label for="contact-email">Contact email (optional)</Label><Input id="contact-email" v-model="email" type="email" /></div>
+        <Button type="submit" :disabled="pending">{{ pending ? 'Registering…' : 'Register claim' }}</Button>
       </form>
     </CardContent>
   </Card>
@@ -79,7 +79,7 @@ onMounted(reload);
   <p v-if="data?.length === 0" class="text-sm text-muted-foreground">No customer claims yet.</p>
   <Card v-for="claim in data" :key="claim.id">
     <CardHeader>
-      <h2 :id="`claim-${claim.id}`" tabindex="-1" class="break-words text-lg font-semibold focus:outline-none">{{ claim.customerLabel }}</h2>
+      <CardTitle><h2 :id="`claim-${claim.id}`" tabindex="-1" class="break-words focus:outline-none">{{ claim.customerLabel }}</h2></CardTitle>
       <p class="break-words text-sm text-muted-foreground">{{ claim.contactEmail }}</p>
     </CardHeader>
     <CardContent class="space-y-3">
@@ -87,8 +87,8 @@ onMounted(reload);
       <p v-if="claim.reason" class="text-sm">{{ claim.reason }}</p>
       <p v-if="claim.competingClaimCount" class="text-sm">{{ claim.competingClaimCount }} other {{ claim.competingClaimCount === 1 ? 'claim' : 'claims' }} for this customer and product.</p>
       <div v-if="context.viewerRole === 'founder' && claim.status === 'pending'" class="flex flex-wrap gap-2">
-        <Button class="h-11" :disabled="pending" @click="decide(claim.id, 'approved')">Approve</Button>
-        <Button :id="`decline-${claim.id}`" variant="outline" class="h-11" :disabled="pending" @click="showDecline(claim.id)">Decline</Button>
+        <Button :disabled="pending" @click="decide(claim.id, 'approved')">Approve</Button>
+        <Button :id="`decline-${claim.id}`" variant="outline" :disabled="pending" @click="showDecline(claim.id)">Decline</Button>
       </div>
       <form v-if="selected === claim.id" class="space-y-3" @submit.prevent="decide(claim.id, 'declined')">
         <div class="space-y-2">
@@ -96,8 +96,8 @@ onMounted(reload);
           <Textarea :id="`reason-${claim.id}`" v-model="reason" required maxlength="1000" />
         </div>
         <div class="flex flex-wrap gap-2">
-          <Button type="submit" class="h-11" :disabled="pending">Confirm decline</Button>
-          <Button type="button" variant="outline" class="h-11" :disabled="pending" @click="cancelDecline(claim.id)">Cancel</Button>
+          <Button type="submit" :disabled="pending">Confirm decline</Button>
+          <Button type="button" variant="outline" :disabled="pending" @click="cancelDecline(claim.id)">Cancel</Button>
         </div>
       </form>
     </CardContent>

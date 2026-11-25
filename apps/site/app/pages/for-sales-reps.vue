@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
+import { Button } from '@repharbor/ui/components/ui/button';
 
 usePublicPage('For independent sales reps | RepHarbor',
   'Track your engagements, approved customer claims, commission entries, and recorded external payments.', '/for-sales-reps');
@@ -12,7 +12,7 @@ const signIn = new URL('/sign-in', useRuntimeConfig().public.appOrigin).href;
     <div class="space-y-5">
       <h1 class="max-w-[15ch] text-5xl font-semibold tracking-tight sm:text-6xl">Your commission agreements in one portfolio</h1>
       <p class="max-w-lg text-lg leading-7 text-muted-foreground">Keep your engagements with different companies together. Each company sees its own engagements and the statements you share.</p>
-      <Button as-child size="lg" class="min-h-12"><NuxtLink :to="signIn" external>Open your portfolio</NuxtLink></Button>
+      <Button as-child size="lg"><NuxtLink :to="signIn" external>Open your portfolio</NuxtLink></Button>
     </div>
     <div class="divide-y border-y bg-card px-5 sm:px-8">
       <section class="py-6">

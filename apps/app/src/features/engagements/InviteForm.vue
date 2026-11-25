@@ -3,12 +3,12 @@ import { ref } from 'vue';
 import type { components } from '@repharbor/contracts';
 import { inviteFounder, inviteRep, revokeInvitation } from '@/api/engagements';
 import { useMutation } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { NativeSelect, NativeSelectOption } from '@repharbor/ui/components/ui/native-select';
 import TermsFields from './TermsFields.vue';
 import { useTermsForm } from './terms-form';
 
@@ -53,18 +53,18 @@ async function revoke() {
 <template>
   <Card>
     <CardHeader>
-      <h2 class="text-lg font-semibold">{{ company ? 'Invite a sales rep' : 'Invite a founder' }}</h2>
+      <CardTitle><h2>{{ company ? 'Invite a sales rep' : 'Invite a founder' }}</h2></CardTitle>
     </CardHeader>
     <CardContent>
       <form class="space-y-5" @submit.prevent="send">
         <div class="space-y-2">
           <Label for="invite-email">Recipient email</Label>
-          <Input id="invite-email" v-model="email" type="email" autocomplete="email" class="h-11" required />
+          <Input id="invite-email" v-model="email" type="email" autocomplete="email" required />
         </div>
         <template v-if="company">
           <div class="space-y-2">
             <Label for="invite-product">Product</Label>
-            <NativeSelect id="invite-product" v-model="productId" class="h-11" required>
+            <NativeSelect id="invite-product" v-model="productId" required>
               <NativeSelectOption value="" disabled>Select a product</NativeSelectOption>
               <NativeSelectOption v-for="item in products" :key="item.id" :value="item.id">{{ item.name }}</NativeSelectOption>
             </NativeSelect>
@@ -73,10 +73,10 @@ async function revoke() {
             v-model:effective="effective" prefix="invite-terms" />
         </template>
         <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
-        <Button type="submit" class="h-11" :disabled="pending">{{ pending ? 'Working…' : 'Send invitation' }}</Button>
+        <Button type="submit" :disabled="pending">{{ pending ? 'Working…' : 'Send invitation' }}</Button>
       </form>
       <p v-if="feedback" role="status" class="mt-4 text-sm">{{ feedback }}</p>
-      <Button v-if="sent" variant="outline" class="mt-3 min-h-11" :disabled="pending" @click="revoke">Revoke invitation</Button>
+      <Button v-if="sent" variant="outline" class="mt-3" :disabled="pending" @click="revoke">Revoke invitation</Button>
     </CardContent>
   </Card>
 </template>

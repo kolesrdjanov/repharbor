@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
 import { providers } from '#shared/content';
 
 usePublicPage('Revenue integrations | RepHarbor',
@@ -14,7 +14,7 @@ usePublicPage('Revenue integrations | RepHarbor',
     </header>
     <div class="grid gap-4 sm:grid-cols-2">
       <Card v-for="provider in providers" :key="provider.slug">
-        <CardHeader><h2 class="text-xl font-semibold">{{ provider.name }}</h2></CardHeader>
+        <CardHeader><CardTitle><h2>{{ provider.name }}</h2></CardTitle></CardHeader>
         <CardContent class="space-y-3">
           <p class="leading-7 text-muted-foreground">{{ provider.summary }}</p>
           <NuxtLink :to="`/integrations/${provider.slug}`" class="inline-flex min-h-11 items-center font-medium underline underline-offset-4">Explore {{ provider.name }}</NuxtLink>

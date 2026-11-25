@@ -3,11 +3,11 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { companyDashboard, createProduct, listProducts, loadAll } from '@/api/engagements';
 import { useMutation, useQuery } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
 import { useSession } from '@/stores/session';
 import EngagementList from './EngagementList.vue';
 import InviteForm from './InviteForm.vue';
@@ -45,23 +45,23 @@ onMounted(() => { if (company.value) void reload(); });
   <p v-if="!company" class="text-sm text-muted-foreground">Choose a company from your workspace.</p>
   <template v-else>
     <div class="flex flex-wrap gap-2">
-      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'integrations', params: { companyId } }">Integrations</RouterLink></Button>
-      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'review', params: { companyId } }">Review sales</RouterLink></Button>
-      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'billing', params: { companyId } }">Subscription</RouterLink></Button>
+      <Button as-child variant="outline"><RouterLink :to="{ name: 'integrations', params: { companyId } }">Integrations</RouterLink></Button>
+      <Button as-child variant="outline"><RouterLink :to="{ name: 'review', params: { companyId } }">Review sales</RouterLink></Button>
+      <Button as-child variant="outline"><RouterLink :to="{ name: 'billing', params: { companyId } }">Subscription</RouterLink></Button>
     </div>
     <QueryStatus :busy="busy" :error="error" @retry="reload" />
     <EngagementList v-if="data" :items="data.engagements" founder />
     <Card>
-      <CardHeader><h2 class="text-lg font-semibold">Products</h2></CardHeader>
+      <CardHeader><CardTitle><h2>Products</h2></CardTitle></CardHeader>
       <CardContent>
         <ul v-if="data?.products.length" class="mb-5 space-y-2 text-sm">
           <li v-for="item in data.products" :key="item.id">{{ item.name }}</li>
         </ul>
         <p v-else-if="data" class="mb-5 text-sm text-muted-foreground">Add a product before inviting a sales rep.</p>
         <form class="space-y-3" @submit.prevent="addProduct">
-          <div class="space-y-2"><Label for="product-name">Product name</Label><Input id="product-name" v-model="name" required class="h-11" /></div>
+          <div class="space-y-2"><Label for="product-name">Product name</Label><Input id="product-name" v-model="name" required /></div>
           <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
-          <Button type="submit" variant="outline" :disabled="pending" class="h-11">{{ pending ? 'Adding…' : 'Add product' }}</Button>
+          <Button type="submit" variant="outline" :disabled="pending">{{ pending ? 'Adding…' : 'Add product' }}</Button>
           <p v-if="feedback" role="status" class="text-sm">{{ feedback }}</p>
         </form>
       </CardContent>

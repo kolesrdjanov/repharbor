@@ -3,12 +3,12 @@ import { ref } from 'vue';
 import type { components } from '@repharbor/contracts';
 import { connect, reconnect } from '@/api/integrations';
 import { useMutation } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@repharbor/ui/components/ui/dialog';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { NativeSelect, NativeSelectOption } from '@repharbor/ui/components/ui/native-select';
 
 const props = defineProps<{ companyId: string; source?: components['schemas']['Connection'] }>();
 const emit = defineEmits<{ saved: [] }>();
@@ -51,7 +51,7 @@ async function save() {
 
 <template>
   <Dialog v-model:open="open" @update:open="(value) => { if (!value) clearSecrets() }">
-    <DialogTrigger as-child><Button :variant="source ? 'outline' : 'default'" class="h-11">{{ source ? 'Reconnect' : 'Connect provider' }}</Button></DialogTrigger>
+    <DialogTrigger as-child><Button :variant="source ? 'outline' : 'default'">{{ source ? 'Reconnect' : 'Connect provider' }}</Button></DialogTrigger>
     <DialogContent class="max-h-[90dvh] overflow-y-auto sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{{ source ? 'Reconnect source' : 'Connect revenue source' }}</DialogTitle>
@@ -61,29 +61,29 @@ async function save() {
         <template v-if="!source">
           <div class="space-y-2">
             <Label for="source-provider">Provider</Label>
-            <NativeSelect id="source-provider" v-model="provider" class="h-11" @update:model-value="clearSecrets">
+            <NativeSelect id="source-provider" v-model="provider" @update:model-value="clearSecrets">
               <NativeSelectOption v-for="(details, key) in providerDetails" :key="key" :value="key">{{ details.name }}</NativeSelectOption>
             </NativeSelect>
           </div>
           <div class="space-y-2">
             <Label for="source-account">{{ providerDetails[provider].label }}</Label>
-            <Input id="source-account" v-model="account" required class="h-11" :placeholder="providerDetails[provider].hint" />
+            <Input id="source-account" v-model="account" required :placeholder="providerDetails[provider].hint" />
           </div>
           <div class="space-y-2">
             <Label for="source-mode">Environment</Label>
-            <NativeSelect id="source-mode" v-model="environment" class="h-11">
+            <NativeSelect id="source-mode" v-model="environment">
               <NativeSelectOption value="test">Test</NativeSelectOption><NativeSelectOption value="live">Live</NativeSelectOption>
             </NativeSelect>
           </div>
         </template>
-        <div class="space-y-2"><Label for="source-api-key">{{ providerDetails[provider].name }} API key</Label><Input id="source-api-key" v-model="apiKey" type="password" autocomplete="off" class="h-11" /></div>
+        <div class="space-y-2"><Label for="source-api-key">{{ providerDetails[provider].name }} API key</Label><Input id="source-api-key" v-model="apiKey" type="password" autocomplete="off" /></div>
         <div v-if="provider === 'revenuecat'" class="space-y-2">
           <Label for="source-auth-header">Webhook authorization header</Label>
-          <Input id="source-auth-header" v-model="authorizationToken" type="password" autocomplete="off" required class="h-11" />
+          <Input id="source-auth-header" v-model="authorizationToken" type="password" autocomplete="off" required />
         </div>
-        <div v-else class="space-y-2"><Label for="source-webhook-secret">Webhook signing secret</Label><Input id="source-webhook-secret" v-model="webhookSecret" type="password" autocomplete="off" required class="h-11" /></div>
+        <div v-else class="space-y-2"><Label for="source-webhook-secret">Webhook signing secret</Label><Input id="source-webhook-secret" v-model="webhookSecret" type="password" autocomplete="off" required /></div>
         <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
-        <DialogFooter><Button type="submit" class="h-11" :disabled="pending">{{ pending ? 'Connecting…' : 'Save connection' }}</Button></DialogFooter>
+        <DialogFooter><Button type="submit" :disabled="pending">{{ pending ? 'Connecting…' : 'Save connection' }}</Button></DialogFooter>
       </form>
     </DialogContent>
   </Dialog>

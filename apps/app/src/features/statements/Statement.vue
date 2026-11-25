@@ -5,10 +5,10 @@ import type { components } from '@repharbor/contracts';
 import { getEngagement } from '@/api/engagements';
 import { getStatement, openingBalances } from '@/api/statements';
 import { useMutation, useQuery } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repharbor/ui/components/ui/table';
 import QueryStatus from '@/features/engagements/QueryStatus.vue';
 import BalanceCards from './BalanceCards.vue';
 import OpeningBalances from './OpeningBalances.vue';
@@ -63,16 +63,16 @@ onMounted(refresh);
       :currency="data.statement.balances[0]?.currency" @saved="saved('Payment recorded.')" />
   </div>
   <nav aria-label="Engagement" class="flex flex-wrap gap-1 border-b pb-2">
-    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'terms', params: { engagementId: id } }">Terms</RouterLink></Button>
-    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'claims', params: { engagementId: id } }">Claims</RouterLink></Button>
-    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'statement', params: { engagementId: id } }">Statement</RouterLink></Button>
+    <Button as-child variant="ghost"><RouterLink :to="{ name: 'terms', params: { engagementId: id } }">Terms</RouterLink></Button>
+    <Button as-child variant="ghost"><RouterLink :to="{ name: 'claims', params: { engagementId: id } }">Claims</RouterLink></Button>
+    <Button as-child variant="ghost"><RouterLink :to="{ name: 'statement', params: { engagementId: id } }">Statement</RouterLink></Button>
   </nav>
   <QueryStatus :busy="busy" :error="error" @retry="refresh" />
   <p v-if="notice" role="status" class="text-sm">{{ notice }}</p>
   <template v-if="data">
     <div class="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
       <span>As of {{ new Date(data.statement.asOf).toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' }) }} UTC</span>
-      <Button variant="outline" class="h-11" :disabled="busy || pending" @click="refresh">Refresh statement</Button>
+      <Button variant="outline" :disabled="busy || pending" @click="refresh">Refresh statement</Button>
     </div>
     <Alert v-if="data.statement.coverageIncomplete" role="status">
       <AlertDescription>Sales data may be incomplete. Recent or historical activity may still need reconciliation.</AlertDescription>
@@ -80,7 +80,7 @@ onMounted(refresh);
     <BalanceCards v-if="data.statement.balances.length" :balances="data.statement.balances" />
     <p v-else class="text-sm text-muted-foreground">This engagement has no balance yet.</p>
     <Card>
-      <CardHeader><h2 id="entries-heading" class="text-lg font-semibold">Statement entries</h2></CardHeader>
+      <CardHeader><CardTitle><h2 id="entries-heading">Statement entries</h2></CardTitle></CardHeader>
       <CardContent>
         <p v-if="!entries.length" class="text-sm text-muted-foreground">There are no statement entries yet.</p>
         <div v-else role="region" aria-labelledby="entries-heading" tabindex="0" class="max-w-full overflow-auto rounded focus-visible:outline-2">
@@ -109,7 +109,7 @@ onMounted(refresh);
           </Table>
         </div>
         <Alert v-if="message" class="mt-4"><AlertDescription>{{ message }}</AlertDescription></Alert>
-        <Button v-if="cursor" variant="outline" class="mt-4 h-11" :disabled="pending || busy" @click="more">Load more entries</Button>
+        <Button v-if="cursor" variant="outline" class="mt-4" :disabled="pending || busy" @click="more">Load more entries</Button>
       </CardContent>
     </Card>
     <OpeningBalances :engagement-id="id" :founder="data.context.viewerRole === 'founder'" :items="data.openings"

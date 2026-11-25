@@ -10,16 +10,11 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@fontsource-variable/instrument-sans": "^5.2.8",
     "@repharbor/contracts": "workspace:*",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "nuxt": "^4.7.0",
-    "reka-ui": "^2.6.1",
-    "tailwind-merge": "^3.4.0",
     "vue": "^3.5.26",
     "vue-router": "^5.5.1",
-    "@vueuse/core": "^14.1.0"
+    "@repharbor/ui": "workspace:*"
   },
   "devDependencies": {
     "tailwindcss": "^4.1.18",

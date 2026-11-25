@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
+import { Button } from '@repharbor/ui/components/ui/button';
 
 const signIn = new URL('/sign-in', useRuntimeConfig().public.appOrigin).href;
 </script>
@@ -17,7 +17,7 @@ const signIn = new URL('/sign-in', useRuntimeConfig().public.appOrigin).href;
         <NuxtLink to="/integrations" class="inline-flex min-h-11 items-center hover:text-foreground">Integrations</NuxtLink>
         <NuxtLink to="/commission-example" class="inline-flex min-h-11 items-center hover:text-foreground">Commission example</NuxtLink>
       </nav>
-      <Button as-child variant="outline" class="min-h-11"><NuxtLink :to="signIn" external>Sign in</NuxtLink></Button>
+      <Button as-child variant="outline"><NuxtLink :to="signIn" external>Sign in</NuxtLink></Button>
     </div>
   </header>
   <main id="main-content" tabindex="-1">

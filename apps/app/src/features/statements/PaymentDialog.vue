@@ -2,12 +2,12 @@
 import { ref } from 'vue';
 import { recordPayment, reversePayment } from '@/api/statements';
 import { useMutation } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@repharbor/ui/components/ui/dialog';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { Textarea } from '@repharbor/ui/components/ui/textarea';
 import { parseMoney } from './money';
 
 const props = defineProps<{ engagementId: string; currency?: string; paymentId?: string }>();
@@ -48,7 +48,7 @@ async function save() {
 <template>
   <Dialog v-model:open="open">
     <DialogTrigger as-child>
-      <Button :variant="paymentId ? 'outline' : 'default'" class="h-11">{{ paymentId ? 'Reverse payment record' : 'Record external payment' }}</Button>
+      <Button :variant="paymentId ? 'outline' : 'default'">{{ paymentId ? 'Reverse payment record' : 'Record external payment' }}</Button>
     </DialogTrigger>
     <DialogContent class="max-h-[90dvh] max-w-sm overflow-y-auto">
       <DialogHeader>
@@ -61,16 +61,16 @@ async function save() {
         <div v-if="paymentId" class="space-y-2"><Label for="reverse-reason">Reason</Label><Textarea id="reverse-reason" v-model="reason" required maxlength="1000" /></div>
         <template v-else>
           <div class="grid grid-cols-[1fr_6rem] gap-3">
-            <div class="space-y-2"><Label for="payment-amount">Amount</Label><Input id="payment-amount" v-model="amount" inputmode="decimal" required class="h-11" /></div>
-            <div class="space-y-2"><Label for="payment-currency">Currency</Label><Input id="payment-currency" v-model="currency" pattern="[A-Z]{3}" maxlength="3" required class="h-11" /></div>
+            <div class="space-y-2"><Label for="payment-amount">Amount</Label><Input id="payment-amount" v-model="amount" inputmode="decimal" required /></div>
+            <div class="space-y-2"><Label for="payment-currency">Currency</Label><Input id="payment-currency" v-model="currency" pattern="[A-Z]{3}" maxlength="3" required /></div>
           </div>
-          <div class="space-y-2"><Label for="payment-date">Date paid</Label><Input id="payment-date" v-model="paidOn" type="date" required class="h-11" /></div>
-          <div class="space-y-2"><Label for="payment-reference">Reference (optional)</Label><Input id="payment-reference" v-model="reference" class="h-11" /></div>
+          <div class="space-y-2"><Label for="payment-date">Date paid</Label><Input id="payment-date" v-model="paidOn" type="date" required /></div>
+          <div class="space-y-2"><Label for="payment-reference">Reference (optional)</Label><Input id="payment-reference" v-model="reference" /></div>
         </template>
         <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
         <DialogFooter>
-          <Button type="button" variant="outline" class="h-11" :disabled="pending" @click="open = false">Cancel</Button>
-          <Button type="submit" class="h-11" :disabled="pending">{{ pending ? 'Saving…' : paymentId ? 'Reverse record' : 'Save payment' }}</Button>
+          <Button type="button" variant="outline" :disabled="pending" @click="open = false">Cancel</Button>
+          <Button type="submit" :disabled="pending">{{ pending ? 'Saving…' : paymentId ? 'Reverse record' : 'Save payment' }}</Button>
         </DialogFooter>
       </form>
     </DialogContent>

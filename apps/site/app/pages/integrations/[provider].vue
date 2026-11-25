@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
+import { Button } from '@repharbor/ui/components/ui/button';
 import { providers } from '#shared/content';
 
 definePageMeta({ key: (route) => route.path });
@@ -25,7 +25,7 @@ const signIn = new URL('/sign-in', useRuntimeConfig().public.appOrigin).href;
       <p v-for="paragraph in provider.details" :key="paragraph" class="leading-7 text-muted-foreground">{{ paragraph }}</p>
     </section>
     <div class="flex flex-wrap items-center gap-4">
-      <Button as-child size="lg" class="min-h-12"><NuxtLink :to="signIn" external>Open RepHarbor</NuxtLink></Button>
+      <Button as-child size="lg"><NuxtLink :to="signIn" external>Open RepHarbor</NuxtLink></Button>
       <a :href="provider.link" class="inline-flex min-h-11 items-center font-medium underline underline-offset-4">Provider documentation</a>
     </div>
   </article>

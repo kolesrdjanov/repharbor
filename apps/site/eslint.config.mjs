@@ -9,7 +9,7 @@ const nuxt = Object.fromEntries([
 ].map((name) => [name, 'readonly']));
 
 export default [
-  { ignores: ['.nuxt/**', '.output/**', 'app/components/ui/**', 'node_modules/**'] },
+  { ignores: ['.nuxt/**', '.output/**', 'node_modules/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...vue.configs['flat/essential'],

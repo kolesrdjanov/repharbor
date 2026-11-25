@@ -1,0 +1,26 @@
+{
+  "$schema": "https://shadcn-vue.com/schema.json",
+  "style": "reka-luma",
+  "font": "inter",
+  "typescript": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/theme.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "rtl": false,
+  "pointer": true,
+  "aliases": {
+    "components": "@repharbor/ui/components",
+    "utils": "@repharbor/ui/lib/utils",
+    "ui": "@repharbor/ui/components/ui",
+    "lib": "@repharbor/ui/lib",
+    "composables": "@repharbor/ui/composables"
+  },
+  "menuColor": "default",
+  "menuAccent": "subtle",
+  "registries": {}
+}

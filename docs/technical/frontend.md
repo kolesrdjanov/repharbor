@@ -30,7 +30,7 @@ Operation names correspond to the [OpenAPI contract](openapi.yaml). Navigation g
 | apps/app/src/features/auth and engagements | Email confirmation, invitations, proposed terms, revision acceptance and claims |
 | apps/app/src/features/statements | Portfolio/company summaries, per-currency statement table, entry detail, manual payment form and correction flow |
 | apps/app/src/features/integrations and billing | Company-only setup, mapping, review and reconciliation, plus the separate RepHarbor subscription screen |
-| apps/app/src/components/ui | Installed shadcn-vue primitives. Compose feature-specific displays in their owning feature directory |
+| packages/ui | Shared shadcn-vue Luma primitives and theme from preset `a2vfJNQ`. Compose feature-specific displays in their owning feature directory |
 
 ## State ownership and data movement
 

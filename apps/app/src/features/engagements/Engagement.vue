@@ -4,11 +4,11 @@ import { useRoute } from 'vue-router';
 import { acceptAgreement, closeEngagement, getEngagement, listAgreements, loadAll, proposeAgreement } from '@/api/engagements';
 import { RequestError } from '@/api/client';
 import { useMutation, useQuery } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@repharbor/ui/components/ui/alert-dialog';
 import { useSession } from '@/stores/session';
 import Claims from './Claims.vue';
 import QueryStatus from './QueryStatus.vue';
@@ -66,9 +66,9 @@ onMounted(reload);
 <template>
   <h1 tabindex="-1" class="text-3xl font-semibold tracking-tight focus:outline-none">{{ route.name === 'claims' ? 'Customer claims' : 'Agreement terms' }}</h1>
   <nav aria-label="Engagement" class="flex flex-wrap gap-2 border-b pb-3">
-    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'terms', params: { engagementId: id } }">Terms</RouterLink></Button>
-    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'claims', params: { engagementId: id } }">Claims</RouterLink></Button>
-    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'statement', params: { engagementId: id } }">Statement</RouterLink></Button>
+    <Button as-child variant="ghost"><RouterLink :to="{ name: 'terms', params: { engagementId: id } }">Terms</RouterLink></Button>
+    <Button as-child variant="ghost"><RouterLink :to="{ name: 'claims', params: { engagementId: id } }">Claims</RouterLink></Button>
+    <Button as-child variant="ghost"><RouterLink :to="{ name: 'statement', params: { engagementId: id } }">Statement</RouterLink></Button>
   </nav>
   <QueryStatus :busy="busy" :error="error" @retry="reload" />
   <template v-if="data">
@@ -77,30 +77,30 @@ onMounted(reload);
       <p v-if="feedback" role="status" class="text-sm">{{ feedback }}</p>
       <Alert v-if="message"><AlertDescription class="space-y-3">
         <p>{{ message }}</p>
-        <Button v-if="failure instanceof RequestError && failure.code === 'STALE_REVISION'" variant="outline" class="h-11" @click="reload">Refresh terms</Button>
+        <Button v-if="failure instanceof RequestError && failure.code === 'STALE_REVISION'" variant="outline" @click="reload">Refresh terms</Button>
       </AlertDescription></Alert>
       <p v-if="!latest" class="text-sm text-muted-foreground">{{ canEdit ? 'Propose terms for the sales rep to review.' : 'The founder can propose terms for your review.' }}</p>
       <p v-else-if="accepted && latest.id !== accepted.id" class="text-sm">Revision {{ accepted.revision }} is accepted. Revision {{ latest.revision }} is awaiting acceptance.</p>
       <Card v-for="version in data.agreements" :key="version.id">
-        <CardHeader><h2 class="text-lg font-semibold">Revision {{ version.revision }}{{ version.repAcceptedAt ? ' · Accepted' : ' · Proposed' }}</h2></CardHeader>
+        <CardHeader><CardTitle><h2>Revision {{ version.revision }}{{ version.repAcceptedAt ? ' · Accepted' : ' · Proposed' }}</h2></CardTitle></CardHeader>
         <CardContent class="space-y-5">
           <TermsSummary :terms="version" />
           <Button v-if="data.viewerRole === 'rep' && data.engagement.status === 'active' && version.id === latest?.id && !version.repAcceptedAt"
-            class="h-11" :disabled="pending" @click="accept">Accept revision {{ version.revision }}</Button>
+            :disabled="pending" @click="accept">Accept revision {{ version.revision }}</Button>
         </CardContent>
       </Card>
       <Card v-if="canEdit">
-        <CardHeader><h2 class="text-lg font-semibold">{{ latest ? 'Propose an amendment' : 'Propose terms' }}</h2></CardHeader>
+        <CardHeader><CardTitle><h2>{{ latest ? 'Propose an amendment' : 'Propose terms' }}</h2></CardTitle></CardHeader>
         <CardContent>
           <form class="space-y-4" @submit.prevent="propose">
             <TermsFields v-model:rate="rate" v-model:mode="mode" v-model:months="months" v-model:due-day="dueDay"
               v-model:effective="effective" prefix="proposal-terms" />
-            <Button type="submit" class="h-11" :disabled="pending">Propose terms</Button>
+            <Button type="submit" :disabled="pending">Propose terms</Button>
           </form>
         </CardContent>
       </Card>
       <AlertDialog v-if="canEdit">
-        <AlertDialogTrigger as-child><Button variant="outline" class="h-11" :disabled="pending">Close engagement</Button></AlertDialogTrigger>
+        <AlertDialogTrigger as-child><Button variant="outline" :disabled="pending">Close engagement</Button></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Close this engagement?</AlertDialogTitle>

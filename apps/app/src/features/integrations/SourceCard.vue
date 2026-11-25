@@ -5,12 +5,12 @@ import { coverage, disconnect, mappings, requestImport, saveMappings } from '@/a
 import { loadAll } from '@/api/engagements';
 import { API_ORIGIN } from '@/config';
 import { useMutation, useQuery } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { NativeSelect, NativeSelectOption } from '@repharbor/ui/components/ui/native-select';
 import QueryStatus from '@/features/engagements/QueryStatus.vue';
 import SourceDialog from './SourceDialog.vue';
 
@@ -69,7 +69,7 @@ function showTime(value?: string) {
 <template>
   <Card>
     <CardHeader class="gap-3">
-      <h2 class="text-lg font-semibold capitalize">{{ source.provider }} · {{ source.environment }}</h2>
+      <CardTitle><h2 class="capitalize">{{ source.provider }} · {{ source.environment }}</h2></CardTitle>
       <p class="text-sm capitalize text-muted-foreground">{{ source.status }} · {{ source.externalAccount }}</p>
     </CardHeader>
     <CardContent class="space-y-5">
@@ -83,9 +83,9 @@ function showTime(value?: string) {
         <code class="block select-all break-all rounded bg-muted p-3 text-xs">{{ API_ORIGIN }}/v1/webhooks/{{ source.provider }}/{{ source.id }}</code>
       </div>
       <div class="flex flex-wrap gap-2">
-        <Button variant="outline" class="h-11" @click="open = !open">{{ open ? 'Hide details' : 'Manage mappings and history' }}</Button>
+        <Button variant="outline" @click="open = !open">{{ open ? 'Hide details' : 'Manage mappings and history' }}</Button>
         <SourceDialog :company-id="companyId" :source="source" @saved="$emit('changed')" />
-        <Button v-if="source.status !== 'disconnected'" variant="ghost" class="h-11" :disabled="pending" @click="stop">Disconnect</Button>
+        <Button v-if="source.status !== 'disconnected'" variant="ghost" :disabled="pending" @click="stop">Disconnect</Button>
       </div>
       <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
       <p v-if="action" role="status" class="text-sm">{{ action }}</p>
@@ -97,28 +97,28 @@ function showTime(value?: string) {
             <h3 class="font-semibold">Product mappings</h3>
             <p v-if="!rows.length" class="text-sm text-muted-foreground">No product mappings yet.</p>
             <fieldset v-for="(row,index) in rows" :key="index" class="grid gap-3 rounded border p-3 sm:grid-cols-2">
-              <div class="space-y-2"><Label :for="`${source.id}-external-${index}`">Provider product ID</Label><Input :id="`${source.id}-external-${index}`" v-model="row.externalProduct" required class="h-11" /></div>
+              <div class="space-y-2"><Label :for="`${source.id}-external-${index}`">Provider product ID</Label><Input :id="`${source.id}-external-${index}`" v-model="row.externalProduct" required /></div>
               <div class="space-y-2">
                 <Label :for="`${source.id}-internal-${index}`">RepHarbor product</Label>
-                <NativeSelect :id="`${source.id}-internal-${index}`" v-model="row.productId" required class="h-11">
+                <NativeSelect :id="`${source.id}-internal-${index}`" v-model="row.productId" required>
                   <NativeSelectOption value="" disabled>Choose product</NativeSelectOption>
                   <NativeSelectOption v-for="product in products" :key="product.id" :value="product.id">{{ product.name }}</NativeSelectOption>
                 </NativeSelect>
               </div>
-              <div class="space-y-2"><Label :for="`${source.id}-channel-${index}`">Sales channel</Label><Input :id="`${source.id}-channel-${index}`" v-model="row.channel" required class="h-11" /></div>
+              <div class="space-y-2"><Label :for="`${source.id}-channel-${index}`">Sales channel</Label><Input :id="`${source.id}-channel-${index}`" v-model="row.channel" required /></div>
               <div class="space-y-2">
                 <Label :for="`${source.id}-authority-${index}`">Source authority</Label>
                 <NativeSelect :id="`${source.id}-authority-${index}`" :model-value="row.authoritative ? 'primary' : 'secondary'"
-                  class="h-11" @update:model-value="row.authoritative = $event === 'primary'">
+                  @update:model-value="row.authoritative = $event === 'primary'">
                   <NativeSelectOption value="primary">Authoritative</NativeSelectOption>
                   <NativeSelectOption value="secondary">Secondary</NativeSelectOption>
                 </NativeSelect>
               </div>
-              <Button type="button" variant="ghost" class="h-11 justify-self-start" @click="rows.splice(index, 1)">Remove mapping</Button>
+              <Button type="button" variant="ghost" class="justify-self-start" @click="rows.splice(index, 1)">Remove mapping</Button>
             </fieldset>
             <div class="flex flex-wrap gap-2">
-              <Button type="button" variant="outline" class="h-11" @click="rows.push({ productId: '', externalProduct: '', channel: 'web', authoritative: true })">Add mapping</Button>
-              <Button type="submit" class="h-11" :disabled="pending || source.status === 'disconnected'">Save mappings</Button>
+              <Button type="button" variant="outline" @click="rows.push({ productId: '', externalProduct: '', channel: 'web', authoritative: true })">Add mapping</Button>
+              <Button type="submit" :disabled="pending || source.status === 'disconnected'">Save mappings</Button>
             </div>
           </form>
           <form class="space-y-4 border-t pt-5" @submit.prevent="backfill">
@@ -129,10 +129,10 @@ function showTime(value?: string) {
               </p>
             </div>
             <div class="flex flex-wrap gap-3">
-              <div class="space-y-2"><Label :for="`${source.id}-from`">Start (UTC)</Label><Input :id="`${source.id}-from`" v-model="from" type="date" required class="h-11" /></div>
-              <div class="space-y-2"><Label :for="`${source.id}-to`">End (exclusive, UTC)</Label><Input :id="`${source.id}-to`" v-model="to" type="date" required class="h-11" /></div>
+              <div class="space-y-2"><Label :for="`${source.id}-from`">Start (UTC)</Label><Input :id="`${source.id}-from`" v-model="from" type="date" required /></div>
+              <div class="space-y-2"><Label :for="`${source.id}-to`">End (exclusive, UTC)</Label><Input :id="`${source.id}-to`" v-model="to" type="date" required /></div>
             </div>
-            <Button type="submit" variant="outline" class="h-11" :disabled="pending || source.status === 'disconnected'">Queue import</Button>
+            <Button type="submit" variant="outline" :disabled="pending || source.status === 'disconnected'">Queue import</Button>
           </form>
         </template>
       </div>

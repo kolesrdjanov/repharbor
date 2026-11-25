@@ -4,10 +4,10 @@ import { useRoute, useRouter } from 'vue-router';
 import { safeReturnPath } from '@repharbor/contracts';
 import { requestMagicLink } from '@/api/auth';
 import { errorMessage, RequestError } from '@/api/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
 import AuthLayout from './AuthLayout.vue';
 import { invitationToken, requestedAddress } from './handoff';
 
@@ -49,14 +49,14 @@ async function submit() {
     <form class="mt-8 space-y-5" @submit.prevent="submit">
       <div class="space-y-2">
         <Label for="email">Email address</Label>
-        <Input id="email" v-model="email" class="h-11" name="email" type="email" autocomplete="username"
+        <Input id="email" v-model="email" name="email" type="email" autocomplete="username"
           spellcheck="false" enterkeyhint="send" required :aria-invalid="invalid || undefined"
           :aria-describedby="invalid ? 'sign-in-error' : undefined" @input="invalid = false; error = ''" />
       </div>
       <Alert v-if="error" id="sign-in-error">
         <AlertDescription>{{ error }}</AlertDescription>
       </Alert>
-      <Button class="h-11 w-full" type="submit" :disabled="pending">
+      <Button class="w-full" type="submit" :disabled="pending">
         {{ pending ? 'Sending link…' : 'Send sign-in link' }}
       </Button>
       <p class="sr-only" role="status">{{ pending ? 'Sending your sign-in link.' : '' }}</p>

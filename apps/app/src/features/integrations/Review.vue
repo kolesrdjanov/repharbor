@@ -5,8 +5,8 @@ import type { components } from '@repharbor/contracts';
 import { loadAll } from '@/api/engagements';
 import { listReview } from '@/api/integrations';
 import { useQuery } from '@/composables/query';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
 import QueryStatus from '@/features/engagements/QueryStatus.vue';
 import { formatMoney } from '@/features/statements/money';
 import { useSession } from '@/stores/session';
@@ -40,17 +40,19 @@ onMounted(() => { if (allowed.value) void reload(); });
   <h1 tabindex="-1" class="text-3xl font-semibold tracking-tight focus:outline-none">Sales review</h1>
   <p v-if="!allowed" class="text-sm text-muted-foreground">Choose a company you manage to review sales.</p>
   <template v-else>
-    <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'integrations', params: { companyId } }">Back to integrations</RouterLink></Button>
+    <Button as-child variant="outline"><RouterLink :to="{ name: 'integrations', params: { companyId } }">Back to integrations</RouterLink></Button>
     <QueryStatus :busy="busy" :error="error" @retry="reload" />
-    <div v-if="resolved" id="review-result" role="status" tabindex="-1" class="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-4">
-      <p class="text-sm">Sales review decision saved.</p>
-      <Button v-if="resolved.postedEngagementId && resolved.postedEntryId" as-child variant="outline" class="h-11">
-        <RouterLink :to="{ name: 'statement-entry', params: { engagementId: resolved.postedEngagementId, entryId: resolved.postedEntryId } }">View statement entry</RouterLink>
-      </Button>
-    </div>
+    <Card v-if="resolved" id="review-result" role="status" tabindex="-1" size="sm">
+      <CardContent class="flex flex-wrap items-center gap-3">
+        <p>Sales review decision saved.</p>
+        <Button v-if="resolved.postedEngagementId && resolved.postedEntryId" as-child variant="outline">
+          <RouterLink :to="{ name: 'statement-entry', params: { engagementId: resolved.postedEngagementId, entryId: resolved.postedEntryId } }">View statement entry</RouterLink>
+        </Button>
+      </CardContent>
+    </Card>
     <p v-if="data?.length === 0" class="text-sm text-muted-foreground">No sales need review.</p>
     <Card v-for="item in data" :key="item.id">
-      <CardHeader><h2 class="break-all text-lg font-semibold">{{ item.customerLabel }}</h2></CardHeader>
+      <CardHeader><CardTitle><h2 class="break-all">{{ item.customerLabel }}</h2></CardTitle></CardHeader>
       <CardContent class="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p class="text-sm text-muted-foreground">{{ reasons[item.reason] ?? item.reason.replaceAll('_', ' ').toLowerCase() }}</p>

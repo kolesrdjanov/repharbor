@@ -4,10 +4,11 @@ import { useRouter } from 'vue-router';
 import { acceptInvitation, listProducts, loadAll, previewInvitation } from '@/api/engagements';
 import { getSession } from '@/api/auth';
 import { useMutation, useQuery } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent } from '@repharbor/ui/components/ui/card';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { NativeSelect, NativeSelectOption } from '@repharbor/ui/components/ui/native-select';
 import { useSession } from '@/stores/session';
 import QueryStatus from '@/features/engagements/QueryStatus.vue';
 import TermsSummary from '@/features/engagements/TermsSummary.vue';
@@ -70,26 +71,28 @@ async function retrySession() {
 
     <template v-if="session.error">
       <p class="mt-4 text-sm">{{ session.error }}</p>
-      <Button variant="outline" class="mt-3 h-11" @click="retrySession">Retry session check</Button>
+      <Button variant="outline" class="mt-3" @click="retrySession">Retry session check</Button>
     </template>
     <template v-else-if="!session.identity">
       <p class="mt-3 text-sm text-muted-foreground">Sign in with the email address that received the invitation.</p>
-      <Button as-child class="mt-6 h-11">
+      <Button as-child class="mt-6">
         <RouterLink :to="{ name: 'sign-in' }">Sign in</RouterLink>
       </Button>
     </template>
     <template v-else-if="data">
       <p v-if="data.companyName" class="mt-3 text-sm text-muted-foreground">{{ data.companyName }} · {{ data.productName }}</p>
       <p v-else class="mt-3 text-sm text-muted-foreground">Choose the company and product you’d like to work with this sales rep on.</p>
-      <div v-if="data.terms" class="mt-6 rounded-lg border bg-card p-5"><TermsSummary :terms="data.terms" /></div>
+      <Card v-if="data.terms" class="mt-6">
+        <CardContent><TermsSummary :terms="data.terms" /></CardContent>
+      </Card>
       <template v-if="data.invitation.status === 'accepted' && data.invitation.engagementId">
         <p class="mt-6 text-sm">You’ve already accepted this invitation.</p>
-        <Button as-child class="mt-4 h-11">
+        <Button as-child class="mt-4">
           <RouterLink :to="{ name: 'terms', params: { engagementId: data.invitation.engagementId } }">View engagement</RouterLink>
         </Button>
       </template>
       <template v-else-if="founderInvite && !companies.length">
-        <Button as-child class="mt-6 h-11">
+        <Button as-child class="mt-6">
           <RouterLink :to="{ name: 'onboarding', query: { from: 'invite' } }">Create a company</RouterLink>
         </Button>
       </template>
@@ -97,7 +100,7 @@ async function retrySession() {
         <template v-if="founderInvite">
           <div class="space-y-2">
             <Label for="invite-company">Company</Label>
-            <NativeSelect id="invite-company" v-model="companyId" class="h-11" required>
+            <NativeSelect id="invite-company" v-model="companyId" required>
               <NativeSelectOption value="" disabled>Choose a company</NativeSelectOption>
               <NativeSelectOption v-for="item in companies" :key="item.id" :value="item.id">{{ item.name }}</NativeSelectOption>
             </NativeSelect>
@@ -105,7 +108,7 @@ async function retrySession() {
           <QueryStatus :busy="products.busy.value" :error="products.error.value" @retry="products.reload" />
           <div v-if="products.data.value?.length" class="space-y-2">
             <Label for="accept-product">Product</Label>
-            <NativeSelect id="accept-product" v-model="productId" class="h-11" required>
+            <NativeSelect id="accept-product" v-model="productId" required>
               <NativeSelectOption value="" disabled>Choose a product</NativeSelectOption>
               <NativeSelectOption v-for="item in products.data.value" :key="item.id" :value="item.id">{{ item.name }}</NativeSelectOption>
             </NativeSelect>
@@ -115,14 +118,14 @@ async function retrySession() {
           </Button>
         </template>
         <p v-else class="text-sm text-muted-foreground">Joining opens the engagement. You can accept the proposed terms in a separate step.</p>
-        <Button type="submit" class="h-11" :disabled="pending || (founderInvite && !productId)">
+        <Button type="submit" :disabled="pending || (founderInvite && !productId)">
           {{ pending ? 'Joining…' : 'Accept invitation' }}
         </Button>
       </form>
     </template>
     <template v-else-if="!busy">
       <Alert v-if="!error" class="mt-4"><AlertDescription>Reopen your invitation email to continue.</AlertDescription></Alert>
-      <Button v-if="error" variant="outline" class="mt-4 h-11" :disabled="pending" @click="switchAccount">Sign in with another account</Button>
+      <Button v-if="error" variant="outline" class="mt-4" :disabled="pending" @click="switchAccount">Sign in with another account</Button>
     </template>
   </AuthLayout>
 </template>

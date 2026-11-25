@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router';
 import { safeReturnPath } from '@repharbor/contracts';
 import { exchangeMagicLink } from '@/api/auth';
 import { RequestError, errorMessage } from '@/api/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
 import { useSession } from '@/stores/session';
 import AuthLayout from './AuthLayout.vue';
 import { requestedAddress, takeConfirmationToken } from './handoff';
@@ -44,10 +44,10 @@ async function confirm() {
       {{ token ? 'Confirm to sign in on this device.' : 'Request a new email link to continue.' }}
     </p>
     <Alert v-if="error" class="mt-5"><AlertDescription>{{ error }}</AlertDescription></Alert>
-    <Button v-if="token" class="mt-6 h-11 w-full" :disabled="pending" @click="confirm">
+    <Button v-if="token" class="mt-6 w-full" :disabled="pending" @click="confirm">
       {{ pending ? 'Signing in…' : 'Confirm sign-in' }}
     </Button>
-    <Button v-else as-child class="mt-6 h-11">
+    <Button v-else as-child class="mt-6">
       <RouterLink :to="{ name: 'sign-in' }">Request a new link</RouterLink>
     </Button>
     <p class="sr-only" role="status">{{ pending ? 'Signing in.' : '' }}</p>

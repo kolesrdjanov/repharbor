@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repharbor/ui/components/ui/button';
 import AuthLayout from './AuthLayout.vue';
 import { requestedAddress } from './handoff';
 
@@ -16,7 +16,7 @@ const route = useRoute();
       It expires in 15 minutes.
     </p>
     <p class="mt-5 text-sm leading-6 text-muted-foreground">If the email hasn’t arrived, check your spam folder or request a new link.</p>
-    <Button as-child variant="outline" class="mt-6 h-11 justify-self-start">
+    <Button as-child variant="outline" class="mt-6 justify-self-start">
       <RouterLink :to="{ name: 'sign-in', query: route.query }">Request a new link</RouterLink>
     </Button>
   </AuthLayout>

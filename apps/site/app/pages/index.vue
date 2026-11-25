@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
 import { providers } from '#shared/content';
 
 usePublicPage('RepHarbor | Sales commissions for founders and reps',
@@ -15,8 +15,8 @@ const signIn = new URL('/sign-in', useRuntimeConfig().public.appOrigin).href;
       <h1 class="max-w-[13ch] text-5xl leading-[0.99] font-semibold tracking-[-0.058em] sm:text-6xl lg:text-7xl">A shared statement for sales commissions.</h1>
       <p class="max-w-lg text-lg leading-7 text-muted-foreground">Connect sales, agree on terms, and give founders and independent sales reps the same view of what was earned, paid, and due.</p>
       <div class="flex flex-wrap gap-3">
-        <Button as-child size="lg" class="min-h-12"><NuxtLink :to="signIn" external>Open RepHarbor</NuxtLink></Button>
-        <Button as-child size="lg" variant="outline" class="min-h-12"><NuxtLink to="/commission-example">See the commission example</NuxtLink></Button>
+        <Button as-child size="lg"><NuxtLink :to="signIn" external>Open RepHarbor</NuxtLink></Button>
+        <Button as-child size="lg" variant="outline"><NuxtLink to="/commission-example">See the commission example</NuxtLink></Button>
       </div>
     </div>
     <StatementExample />
@@ -39,7 +39,7 @@ const signIn = new URL('/sign-in', useRuntimeConfig().public.appOrigin).href;
     <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">Connect your revenue source</h2>
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Card v-for="provider in providers" :key="provider.slug" class="gap-2">
-        <CardHeader><h3 class="font-semibold">{{ provider.name }}</h3></CardHeader>
+        <CardHeader><CardTitle><h3>{{ provider.name }}</h3></CardTitle></CardHeader>
         <CardContent class="space-y-3">
           <p class="text-sm leading-6 text-muted-foreground">{{ provider.summary }}</p>
           <NuxtLink :to="`/integrations/${provider.slug}`" class="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">About {{ provider.name }}</NuxtLink>

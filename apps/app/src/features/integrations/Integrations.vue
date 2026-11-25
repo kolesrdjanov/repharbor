@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 import { listProducts, loadAll } from '@/api/engagements';
 import { listConnections } from '@/api/integrations';
 import { useQuery } from '@/composables/query';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repharbor/ui/components/ui/button';
 import QueryStatus from '@/features/engagements/QueryStatus.vue';
 import { useSession } from '@/stores/session';
 import SourceCard from './SourceCard.vue';
@@ -28,10 +28,10 @@ onMounted(() => { if (company.value) void reload(); });
   <p v-if="!company" class="text-sm text-muted-foreground">Choose a company you manage to view integrations.</p>
   <template v-else>
     <div class="flex flex-wrap items-center gap-2">
-      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'company', params: { companyId } }">{{ company.name }}</RouterLink></Button>
-      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'review', params: { companyId } }">Review sales</RouterLink></Button>
+      <Button as-child variant="outline"><RouterLink :to="{ name: 'company', params: { companyId } }">{{ company.name }}</RouterLink></Button>
+      <Button as-child variant="outline"><RouterLink :to="{ name: 'review', params: { companyId } }">Review sales</RouterLink></Button>
       <SourceDialog :company-id="companyId" @saved="reload" />
-      <Button variant="ghost" class="h-11" :disabled="busy" @click="reload">Refresh connections</Button>
+      <Button variant="ghost" :disabled="busy" @click="reload">Refresh connections</Button>
     </div>
     <QueryStatus :busy="busy" :error="error" @retry="reload" />
     <p v-if="data?.sources.length === 0" class="text-sm text-muted-foreground">Connect a revenue source to track payments for your products.</p>

@@ -3,8 +3,8 @@ import { computed, ref } from 'vue';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
 import { safeReturnPath } from '@repharbor/contracts';
 import { errorMessage } from '@/api/client';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
 import { useSession } from '@/stores/session';
 import { invitationToken } from './handoff';
 
@@ -46,29 +46,29 @@ async function signOut() {
       </RouterLink>
       <div v-if="session.identity" class="flex min-w-0 items-center gap-3">
         <span class="hidden max-w-64 truncate text-sm text-muted-foreground sm:inline">{{ session.identity.email }}</span>
-        <Button variant="outline" class="min-h-11" :disabled="busy" @click="signOut">{{ busy ? 'Signing out…' : 'Sign out' }}</Button>
+        <Button variant="outline" :disabled="busy" @click="signOut">{{ busy ? 'Signing out…' : 'Sign out' }}</Button>
       </div>
     </div>
   </header>
 
   <div class="mx-auto grid max-w-6xl gap-6 px-5 py-8 sm:px-8 md:grid-cols-[14rem_minmax(0,1fr)]">
     <nav v-if="session.identity" aria-label="Workspace" class="flex flex-wrap content-start gap-2 md:flex-col">
-      <Button as-child variant="ghost" class="min-h-11 justify-start">
+      <Button as-child variant="ghost" class="justify-start">
         <RouterLink to="/portfolio">Portfolio</RouterLink>
       </Button>
-      <Button v-if="session.identity.pendingInvitationId || invitationToken" as-child variant="ghost" class="min-h-11 justify-start">
+      <Button v-if="session.identity.pendingInvitationId || invitationToken" as-child variant="ghost" class="justify-start">
         <RouterLink to="/invite">Open invitation</RouterLink>
       </Button>
-      <Button v-for="company in companies" :key="company.id" as-child variant="ghost" class="min-h-11 justify-start">
+      <Button v-for="company in companies" :key="company.id" as-child variant="ghost" class="justify-start">
         <RouterLink :to="{ name: 'company', params: { companyId: company.id } }">{{ company.name }}</RouterLink>
       </Button>
-      <Button as-child variant="outline" class="min-h-11 justify-start">
+      <Button as-child variant="outline" class="justify-start">
         <RouterLink to="/onboarding">Create a company</RouterLink>
       </Button>
     </nav>
     <main class="min-w-0 space-y-5">
       <Alert v-if="error || session.error"><AlertDescription>{{ error || session.error }}</AlertDescription></Alert>
-      <Button v-if="session.error" variant="outline" class="min-h-11" @click="retry">Retry session check</Button>
+      <Button v-if="session.error" variant="outline" @click="retry">Retry session check</Button>
       <RouterView v-if="session.identity" v-slot="{ Component }">
         <component :is="Component" :key="route.path" />
       </RouterView>

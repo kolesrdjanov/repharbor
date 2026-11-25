@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import type { components } from '@repharbor/contracts';
-import { Button } from '@/components/ui/button';
+import { Button } from '@repharbor/ui/components/ui/button';
 import { formatMoney } from '@/features/statements/money';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@repharbor/ui/components/ui/card';
 
 defineProps<{ items: components['schemas']['EngagementSummary'][]; founder?: boolean }>();
 </script>
 
 <template>
   <Card>
-    <CardHeader><h2 class="text-lg font-semibold">Engagements</h2></CardHeader>
+    <CardHeader><CardTitle><h2>Engagements</h2></CardTitle></CardHeader>
     <CardContent>
       <p v-if="!items.length" class="text-sm text-muted-foreground">No engagements yet. Send an invitation to get started.</p>
       <ul v-else class="divide-y">
@@ -27,10 +27,10 @@ defineProps<{ items: components['schemas']['EngagementSummary'][]; founder?: boo
               · {{ formatMoney(balance.dueMinor, balance.currency) }} due
             </p>
           </div>
-          <Button v-if="item.engagement.status !== 'invited'" as-child variant="outline" class="min-h-11">
+          <Button v-if="item.engagement.status !== 'invited'" as-child variant="outline">
             <RouterLink :to="{ name: 'statement', params: { engagementId: item.engagement.id } }">Statement</RouterLink>
           </Button>
-          <Button as-child variant="outline" class="min-h-11">
+          <Button as-child variant="outline">
             <RouterLink :to="{ name: 'terms', params: { engagementId: item.engagement.id } }">
               <span class="sr-only">{{ item.productName }} </span>View terms
             </RouterLink>

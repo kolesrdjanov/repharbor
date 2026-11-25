@@ -3,12 +3,12 @@ import { ref } from 'vue';
 import type { components } from '@repharbor/contracts';
 import { resolveReview } from '@/api/integrations';
 import { useMutation } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@repharbor/ui/components/ui/dialog';
+import { Label } from '@repharbor/ui/components/ui/label';
+import { Textarea } from '@repharbor/ui/components/ui/textarea';
+import { NativeSelect, NativeSelectOption } from '@repharbor/ui/components/ui/native-select';
 
 const props = defineProps<{ companyId: string; item: components['schemas']['ReviewItem'] }>();
 const emit = defineEmits<{ saved: [item: components['schemas']['ReviewItem']] }>();
@@ -35,7 +35,7 @@ async function resolve() {
 
 <template>
   <Dialog v-model:open="open">
-    <DialogTrigger as-child><Button variant="outline" class="h-11">Review sale</Button></DialogTrigger>
+    <DialogTrigger as-child><Button variant="outline">Review sale</Button></DialogTrigger>
     <DialogContent class="max-h-[90dvh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Resolve this sale</DialogTitle>
@@ -46,7 +46,7 @@ async function resolve() {
       <form class="space-y-4" @submit.prevent="resolve">
         <div class="space-y-2">
           <Label for="review-decision">Decision</Label>
-          <NativeSelect id="review-decision" v-model="choice" required class="h-11">
+          <NativeSelect id="review-decision" v-model="choice" required>
             <NativeSelectOption value="" disabled>Choose a decision</NativeSelectOption>
             <NativeSelectOption v-for="candidate in item.candidateClaims" :key="candidate.id" :value="candidate.id">Assign to {{ candidate.customerLabel }}</NativeSelectOption>
             <NativeSelectOption value="ineligible">Mark ineligible</NativeSelectOption>
@@ -54,7 +54,7 @@ async function resolve() {
         </div>
         <div class="space-y-2"><Label for="review-reason">Reason</Label><Textarea id="review-reason" v-model="reason" maxlength="1000" required /></div>
         <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
-        <DialogFooter><Button type="submit" class="h-11" :disabled="pending">{{ pending ? 'Saving…' : 'Confirm decision' }}</Button></DialogFooter>
+        <DialogFooter><Button type="submit" :disabled="pending">{{ pending ? 'Saving…' : 'Confirm decision' }}</Button></DialogFooter>
       </form>
     </DialogContent>
   </Dialog>

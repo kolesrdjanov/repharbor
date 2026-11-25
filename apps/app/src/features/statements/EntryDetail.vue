@@ -4,8 +4,8 @@ import { useRoute } from 'vue-router';
 import { getEngagement, listAgreements, loadAll } from '@/api/engagements';
 import { getEntry } from '@/api/statements';
 import { useQuery } from '@/composables/query';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader } from '@repharbor/ui/components/ui/card';
 import QueryStatus from '@/features/engagements/QueryStatus.vue';
 import { entryNames } from './EntryLabels';
 import PaymentDialog from './PaymentDialog.vue';
@@ -26,7 +26,7 @@ onMounted(reload);
 </script>
 
 <template>
-  <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'statement', params: { engagementId: engagement } }">Back to statement</RouterLink></Button>
+  <Button as-child variant="outline"><RouterLink :to="{ name: 'statement', params: { engagementId: engagement } }">Back to statement</RouterLink></Button>
   <h1 tabindex="-1" class="text-3xl font-semibold tracking-tight focus:outline-none">{{ data ? entryNames[data.item.kind] : 'Statement entry' }}</h1>
   <QueryStatus :busy="busy" :error="error" @retry="reload" />
   <Card v-if="data">
@@ -45,7 +45,7 @@ onMounted(reload);
         <div v-if="data.item.paymentReference"><dt class="text-muted-foreground">Payment reference</dt><dd>{{ data.item.paymentReference }}</dd></div>
         <div v-if="data.item.reason"><dt class="text-muted-foreground">Reason</dt><dd>{{ data.item.reason }}</dd></div>
       </dl>
-      <Button v-if="data.item.relatedEntryId" as-child variant="outline" class="mt-5 h-11">
+      <Button v-if="data.item.relatedEntryId" as-child variant="outline" class="mt-5">
         <RouterLink :to="{ name: 'statement-entry', params: { engagementId: engagement, entryId: data.item.relatedEntryId } }">View related entry</RouterLink>
       </Button>
       <PaymentDialog v-if="data.context.viewerRole === 'founder' && data.item.kind === 'external_payment' && data.item.paymentId && !reversed"

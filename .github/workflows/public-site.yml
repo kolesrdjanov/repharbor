@@ -5,6 +5,7 @@ on:
     paths:
       - 'apps/site/**'
       - 'packages/contracts/**'
+      - 'packages/ui/**'
       - 'docs/technical/openapi.yaml'
       - '.node-version'
       - 'package.json'

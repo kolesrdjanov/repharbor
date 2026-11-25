@@ -3,11 +3,11 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { createCompany } from '@/api/engagements';
 import { useMutation } from '@/composables/query';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@repharbor/ui/components/ui/alert';
+import { Button } from '@repharbor/ui/components/ui/button';
+import { Card, CardContent, CardHeader } from '@repharbor/ui/components/ui/card';
+import { Input } from '@repharbor/ui/components/ui/input';
+import { Label } from '@repharbor/ui/components/ui/label';
 import { useSession } from '@/stores/session';
 
 const name = ref('');
@@ -34,10 +34,10 @@ async function save() {
     </CardHeader>
     <CardContent>
       <form class="space-y-4" @submit.prevent="save">
-        <div class="space-y-2"><Label for="company-name">Company name</Label><Input id="company-name" v-model="name" required class="h-11" /></div>
-        <div class="space-y-2"><Label for="time-zone">IANA time zone</Label><Input id="time-zone" v-model="timeZone" required class="h-11" /></div>
+        <div class="space-y-2"><Label for="company-name">Company name</Label><Input id="company-name" v-model="name" required /></div>
+        <div class="space-y-2"><Label for="time-zone">IANA time zone</Label><Input id="time-zone" v-model="timeZone" required /></div>
         <Alert v-if="message"><AlertDescription>{{ message }}</AlertDescription></Alert>
-        <Button type="submit" class="h-11" :disabled="pending">{{ pending ? 'Creating…' : 'Create company' }}</Button>
+        <Button type="submit" :disabled="pending">{{ pending ? 'Creating…' : 'Create company' }}</Button>
       </form>
     </CardContent>
   </Card>
