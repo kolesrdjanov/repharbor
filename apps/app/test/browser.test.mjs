@@ -99,7 +99,9 @@ test('independent founder and rep sessions, payment recovery, matching statement
     await page.getByRole('link', { name: 'View related entry' }).click();
     await page.getByText('20%', { exact: true }).waitFor();
   }
+  const signInHeading = rep.getByRole('heading', { name: 'Sign in to RepHarbor' });
   await rep.getByRole('button', { name: 'Sign out' }).click();
+  await signInHeading.waitFor();
   await rep.goto(target);
-  await rep.getByRole('heading', { name: 'Sign in to RepHarbor' }).waitFor();
+  await signInHeading.waitFor();
 });
