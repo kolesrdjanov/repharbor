@@ -16,6 +16,12 @@ export function sessionCookie(request: Request) {
   return undefined;
 }
 
+export function checkOrigin(request: Request, origin: string) {
+  if (request.get('Origin') !== origin) {
+    throw new ApiError(403, 'ORIGIN_DENIED', 'Open the RepHarbor app to continue.');
+  }
+}
+
 @Controller('auth')
 class AuthController {
   private readonly config = readConfiguration();
@@ -25,16 +31,10 @@ class AuthController {
 
   constructor(private readonly auth: AuthService) {}
 
-  private checkOrigin(request: Request) {
-    if (request.get('Origin') !== this.config.APP_ORIGIN) {
-      throw new ApiError(403, 'ORIGIN_DENIED', 'Open the RepHarbor app to continue.');
-    }
-  }
-
   @Post('magic-links')
   @HttpCode(202)
   async request(@Body() body: unknown, @Req() request: Request) {
-    this.checkOrigin(request);
+    checkOrigin(request, this.config.APP_ORIGIN);
     await this.auth.requestLink(parseInput(requestMagicLink, body), request.ip ?? 'unknown');
   }
 
@@ -42,7 +42,7 @@ class AuthController {
   @HttpCode(200)
   @Header('Cache-Control', 'no-store')
   async exchange(@Body() body: unknown, @Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    this.checkOrigin(request);
+    checkOrigin(request, this.config.APP_ORIGIN);
     const { token } = parseInput(exchangeMagicLink, body);
     const result = await this.auth.exchange(token, request.ip ?? 'unknown');
     response.cookie(COOKIE, result.sessionToken, { ...this.cookieOptions, expires: result.expiresAt });
@@ -58,7 +58,7 @@ class AuthController {
   @Delete('session')
   @HttpCode(204)
   async signOut(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
-    this.checkOrigin(request);
+    checkOrigin(request, this.config.APP_ORIGIN);
     const session = await this.auth.requireSession(sessionCookie(request));
     await this.auth.revoke(session.id);
     response.clearCookie(COOKIE, this.cookieOptions);

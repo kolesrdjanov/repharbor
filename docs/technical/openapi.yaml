@@ -2595,6 +2595,10 @@ components:
         reason:
           type: string
           minLength: 1
+        competingClaimCount:
+          description: Other pending or approved claims for the same product and customer, visible to the founder only.
+          type: integer
+          minimum: 0
     Connection:
       type: object
       additionalProperties: false

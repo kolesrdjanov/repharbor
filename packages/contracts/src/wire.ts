@@ -734,6 +734,8 @@ export interface components {
             /** Format: email */
             contactEmail?: string;
             reason?: string;
+            /** @description Other pending or approved claims for the same product and customer, visible to the founder only. */
+            competingClaimCount?: number;
         };
         Connection: {
             /** Format: uuid */

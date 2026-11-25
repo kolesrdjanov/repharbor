@@ -13,3 +13,5 @@ This audit covers A1 and the U1 sign-in and shell implementation in the commit t
 | Switch roles, create a company and resume an invitation | `apps/app/src/features/auth/SessionShell.vue`, `apps/api/src/auth/auth.service.ts` | The shell lists verified founder memberships and the portfolio. Company creation and the invitation preview/acceptance workflow require B2/U2. Verify them at that boundary. |
 
 New local environment settings are `SECRET_ENCRYPTION_KEY` and optional `TRUST_PROXY_HOPS`. The migration adds the identity, invitation, rate-limit and job tables. Next task is B2. Start by adding claim and audit storage and use `AuthService.requireSession` before every engagement read or mutation.
+
+The company creation and invitation handoff checks were exercised during B2/U2. See [phase 2](phase-2.md) for the authenticated browser observations. Resend live delivery remains pending.

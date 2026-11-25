@@ -10,7 +10,7 @@ import { unseal } from './secrets';
 const argsSchema = z.object({ linkId: z.uuid(), sealedToken: z.string() });
 const MAX_ATTEMPTS = 5;
 
-type Lease = { id: string; args: unknown; attempts: number; leaseToken: string };
+type Lease = { id: string; kind: string; args: unknown; attempts: number; leaseToken: string };
 
 @Injectable()
 export class LoginMailWorker implements OnModuleInit, OnModuleDestroy {
@@ -49,7 +49,7 @@ export class LoginMailWorker implements OnModuleInit, OnModuleDestroy {
     const [job] = await this.database.$queryRaw<Lease[]>`
       WITH head AS (
         SELECT id FROM job
-        WHERE kind = 'login_mail' AND (
+        WHERE kind IN ('login_mail', 'invitation_mail') AND (
           (state = 'ready' AND run_after <= now()) OR (state = 'leased' AND lease_until <= now())
         )
         ORDER BY run_after, id
@@ -60,7 +60,7 @@ export class LoginMailWorker implements OnModuleInit, OnModuleDestroy {
       SET state = 'leased', lease_token = ${leaseToken}::uuid, lease_until = now() + interval '60 seconds',
           attempts = attempts + 1
       FROM head WHERE job.id = head.id
-      RETURNING job.id, job.args, job.attempts, job.lease_token AS "leaseToken"
+      RETURNING job.id, job.kind, job.args, job.attempts, job.lease_token AS "leaseToken"
     `;
     return job;
   }
@@ -70,6 +70,10 @@ export class LoginMailWorker implements OnModuleInit, OnModuleDestroy {
     url.hash = new URLSearchParams({ token }).toString();
     const subject = invitation ? 'Sign in to review your RepHarbor invitation' : 'Your RepHarbor sign-in link';
     const text = `Open this link and select Confirm sign-in to continue:\n\n${url.href}\n\nThis link expires in 15 minutes. If you did not request it, you can ignore this email.`;
+    return this.sendMessage(jobId, email, subject, text);
+  }
+
+  private async sendMessage(jobId: string, email: string, subject: string, text: string) {
     if (this.smtp) {
       await this.smtp.sendMail({ from: this.config.MAIL_FROM, to: email, subject, text });
       return;
@@ -78,7 +82,7 @@ export class LoginMailWorker implements OnModuleInit, OnModuleDestroy {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${this.config.RESEND_API_KEY}`, 'Content-Type': 'application/json',
-        'Idempotency-Key': `repharbor-login-mail-${jobId}`,
+        'Idempotency-Key': `repharbor-mail-${jobId}`,
       },
       body: JSON.stringify({ from: this.config.MAIL_FROM, to: [email], subject, text }),
       signal: AbortSignal.timeout(15_000),
@@ -106,11 +110,22 @@ export class LoginMailWorker implements OnModuleInit, OnModuleDestroy {
   private async deliver(job: Lease) {
     const args = argsSchema.safeParse(job.args);
     if (!args.success) return this.finish(job, 'INVALID_MAIL_JOB');
-    const link = await this.database.loginLink.findUnique({ where: { id: args.data.linkId } });
-    if (!link || link.consumedAt || link.expiresAt <= new Date()) return this.finish(job, 'LINK_UNAVAILABLE');
     if (job.attempts > MAX_ATTEMPTS) return this.finish(job, 'MAIL_RETRY_LIMIT');
     try {
-      await this.send(job.id, link.email, unseal(args.data.sealedToken, this.key), Boolean(link.invitationId));
+      if (job.kind === 'invitation_mail') {
+        const invite = await this.database.invitation.findUnique({ where: { id: args.data.linkId } });
+        if (!invite || invite.acceptedAt || invite.revokedAt || invite.expiresAt <= new Date()) {
+          return this.finish(job, 'LINK_UNAVAILABLE');
+        }
+        const url = new URL('/invite', this.config.APP_ORIGIN);
+        url.hash = new URLSearchParams({ token: unseal(args.data.sealedToken, this.key) }).toString();
+        await this.sendMessage(job.id, invite.email, 'You are invited to RepHarbor',
+          `Open this link to review your invitation:\n\n${url.href}\n\nThis invitation expires in seven days.`);
+      } else {
+        const link = await this.database.loginLink.findUnique({ where: { id: args.data.linkId } });
+        if (!link || link.consumedAt || link.expiresAt <= new Date()) return this.finish(job, 'LINK_UNAVAILABLE');
+        await this.send(job.id, link.email, unseal(args.data.sealedToken, this.key), Boolean(link.invitationId));
+      }
     } catch {
       return this.finish(job, 'MAIL_DELIVERY_FAILED');
     }

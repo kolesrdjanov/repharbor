@@ -18,7 +18,8 @@
     "vue-router": "^4.6.4",
     "zod": "^4.1.13",
     "@repharbor/contracts": "workspace:*",
-    "@vueuse/core": "^14.1.0"
+    "@vueuse/core": "^14.1.0",
+    "lucide-vue-next": "^0.577.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",

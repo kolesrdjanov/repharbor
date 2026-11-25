@@ -12,6 +12,9 @@ model AppUser {
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   sessions UserSession[]
+  decisions Claim[]
+  auditEvents AuditEvent[]
+  idempotencyRecords IdempotencyRecord[]
   invitationsSent Invitation[] @relation("InvitationsSent")
   invitationsAccepted Invitation[] @relation("InvitationsAccepted")
   memberships CompanyFounder[]
@@ -28,6 +31,7 @@ model Company {
   timeZone String @map("time_zone")
   founders CompanyFounder[]
   products Product[]
+  auditEvents AuditEvent[]
 
   @@map("company")
 }
@@ -63,6 +67,7 @@ model Engagement {
   product   Product @relation(fields: [companyId, productId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
   rep       AppUser? @relation(fields: [repId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   agreements AgreementVersion[]
+  claims Claim[]
   invitations Invitation[]
 
   @@unique([companyId, id])
@@ -167,4 +172,55 @@ model AuthRateLimit {
 
   @@index([expiresAt], map: "auth_rate_limit_by_expiry")
   @@map("auth_rate_limit")
+}
+
+model Claim {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId     String @map("company_id") @db.Uuid
+  productId     String @map("product_id") @db.Uuid
+  engagementId  String @map("engagement_id") @db.Uuid
+  customerLabel String @map("customer_label")
+  contactEmail  String? @map("contact_email")
+  customerKey   String? @default(dbgenerated()) @map("customer_key")
+  status        String
+  reason        String?
+  decidedBy     String? @map("decided_by") @db.Uuid
+  decidedAt     DateTime? @map("decided_at") @db.Timestamptz(6)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  engagement    Engagement @relation(fields: [companyId, productId, engagementId], references: [companyId, productId, id], onDelete: NoAction, onUpdate: NoAction)
+  decider       AppUser? @relation(fields: [decidedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([companyId, productId, id])
+  @@unique([engagementId, id])
+  @@index([engagementId, status, createdAt, id], map: "claims_by_status")
+  @@map("claim")
+}
+
+model IdempotencyRecord {
+  actorId      String @map("actor_id") @db.Uuid
+  scope        String
+  key          String
+  requestHash  Bytes @map("request_hash")
+  responseCode Int @map("response_code")
+  responseBody Json? @map("response_body")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  actor        AppUser @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([actorId, scope, key])
+  @@map("idempotency_record")
+}
+
+model AuditEvent {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId   String? @map("company_id") @db.Uuid
+  actorId     String? @map("actor_id") @db.Uuid
+  subjectType String @map("subject_type")
+  subjectId   String @map("subject_id") @db.Uuid
+  action      String
+  details     Json
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  company     Company? @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  actor       AppUser? @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("audit_event")
 }

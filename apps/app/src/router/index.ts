@@ -14,8 +14,11 @@ export const router = createRouter({
     {
       path: '/', meta: { requiresSession: true }, component: () => import('@/features/auth/SessionShell.vue'),
       children: [
-        { path: 'portfolio', name: 'portfolio', meta: { title: 'Your portfolio' }, component: () => import('@/features/auth/ContextHome.vue') },
-        { path: 'companies/:companyId', name: 'company', meta: { title: 'Company' }, component: () => import('@/features/auth/ContextHome.vue') },
+        { path: 'portfolio', name: 'portfolio', meta: { title: 'Your portfolio' }, component: () => import('@/features/engagements/Portfolio.vue') },
+        { path: 'onboarding', name: 'onboarding', meta: { title: 'Create a company' }, component: () => import('@/features/engagements/CompanySetup.vue') },
+        { path: 'engagements/:engagementId/terms', name: 'terms', meta: { title: 'Agreement terms' }, component: () => import('@/features/engagements/Engagement.vue') },
+        { path: 'engagements/:engagementId/claims', name: 'claims', meta: { title: 'Customer claims' }, component: () => import('@/features/engagements/Engagement.vue') },
+        { path: 'companies/:companyId', name: 'company', meta: { title: 'Company' }, component: () => import('@/features/engagements/Company.vue') },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/portfolio' },

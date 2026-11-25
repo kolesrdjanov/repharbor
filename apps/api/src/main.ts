@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.controller';
 import { ApiError, assignRequestId, HttpErrorFilter } from './http';
 import { readConfiguration } from './config';
 import { Database, DatabaseModule } from './database';
+import { EngagementModule } from './engagement/engagement.controller';
 
 @Controller('health')
 class HealthController {
@@ -22,7 +23,7 @@ class HealthController {
   }
 }
 
-@Module({ imports: [DatabaseModule, AuthModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, AuthModule, EngagementModule], controllers: [HealthController] })
 class ApiModule {}
 
 async function bootstrap() {

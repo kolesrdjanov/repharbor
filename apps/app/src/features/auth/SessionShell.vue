@@ -6,6 +6,7 @@ import { errorMessage } from '@/api/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { useSession } from '@/stores/session';
+import { invitationToken } from './handoff';
 
 const route = useRoute();
 const router = useRouter();
@@ -55,14 +56,22 @@ async function signOut() {
       <Button as-child variant="ghost" class="min-h-11 justify-start">
         <RouterLink to="/portfolio">Portfolio</RouterLink>
       </Button>
+      <Button v-if="session.identity.pendingInvitationId || invitationToken" as-child variant="ghost" class="min-h-11 justify-start">
+        <RouterLink to="/invite">Open invitation</RouterLink>
+      </Button>
       <Button v-for="company in companies" :key="company.id" as-child variant="ghost" class="min-h-11 justify-start">
         <RouterLink :to="{ name: 'company', params: { companyId: company.id } }">{{ company.name }}</RouterLink>
+      </Button>
+      <Button as-child variant="outline" class="min-h-11 justify-start">
+        <RouterLink to="/onboarding">Create a company</RouterLink>
       </Button>
     </nav>
     <main class="min-w-0 space-y-5">
       <Alert v-if="error || session.error"><AlertDescription>{{ error || session.error }}</AlertDescription></Alert>
       <Button v-if="session.error" variant="outline" class="min-h-11" @click="retry">Retry session check</Button>
-      <RouterView v-if="session.identity" />
+      <RouterView v-if="session.identity" v-slot="{ Component }">
+        <component :is="Component" :key="route.path" />
+      </RouterView>
     </main>
   </div>
 </template>
