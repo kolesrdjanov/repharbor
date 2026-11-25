@@ -12,12 +12,15 @@ pnpm install --frozen-lockfile
 cp -n apps/api/.env.example apps/api/.env
 cp -n apps/app/.env.example apps/app/.env
 docker compose up -d --wait
+pnpm contracts:build
 pnpm db:generate
 pnpm db:migrate
 pnpm db:seed
 ```
 
 Prisma downloads a verified engine from `binaries.prisma.sh`. In managed environments with a read-only home directory, set `XDG_DATA_HOME` to a writable directory for pnpm before running the commands.
+
+Development serves the canonical OpenAPI document at `/docs/openapi.yaml` and a read-only viewer at `/docs`. Run `pnpm contracts:generate` after changing the document, then `pnpm contracts:build` to refresh the shared runtime package.
 
 The seed is for local development and can be run again. For another migration, generate the client and apply migrations using the same two database commands.
 

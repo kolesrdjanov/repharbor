@@ -12,6 +12,7 @@ const configuration = z.object({
   DATABASE_URL: z.url({ protocol: /^postgres(?:ql)?$/ }),
   APP_ORIGIN: origin,
   API_ORIGIN: origin,
+  API_DOCS_ENABLED: z.enum(['true', 'false']).default('false'),
   PORT: port,
   WORKER_HEALTH_PORT: port,
   SESSION_TTL_SECONDS: z.coerce.number().int().positive().max(31_536_000),

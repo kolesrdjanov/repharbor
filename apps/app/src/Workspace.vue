@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { z } from 'zod';
+import { health } from '@repharbor/contracts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { API_ORIGIN } from './config';
@@ -12,7 +12,7 @@ async function checkApi() {
   try {
     const response = await fetch(new URL('/health', API_ORIGIN), { signal: AbortSignal.timeout(5_000) });
     if (!response.ok) throw new Error('API unavailable');
-    z.object({ status: z.literal('ok') }).parse(await response.json());
+    health.parse(await response.json());
     status.value = 'ready';
   } catch {
     status.value = 'unavailable';

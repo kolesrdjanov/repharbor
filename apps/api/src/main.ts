@@ -1,8 +1,10 @@
 import 'reflect-metadata';
-import { randomUUID } from 'node:crypto';
-import { Controller, Get, Module, ServiceUnavailableException } from '@nestjs/common';
+import { health } from '@repharbor/contracts';
+import { Controller, Get, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import type { NextFunction, Request, Response } from 'express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { mountApiDocs } from './api-docs';
+import { ApiError, assignRequestId, HttpErrorFilter } from './http';
 import { readConfiguration } from './config';
 import { Database, DatabaseModule } from './database';
 
@@ -13,9 +15,9 @@ class HealthController {
   @Get()
   async check() {
     if (!await this.database.isReady()) {
-      throw new ServiceUnavailableException({ status: 'unavailable' });
+      throw new ApiError(503, 'UNAVAILABLE', 'The database is unavailable.');
     }
-    return { status: 'ok' };
+    return health.parse({ status: 'ok' });
   }
 }
 
@@ -24,12 +26,11 @@ class ApiModule {}
 
 async function bootstrap() {
   const config = readConfiguration();
-  const app = await NestFactory.create(ApiModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(ApiModule, { rawBody: true });
   app.enableShutdownHooks();
-  app.use((_request: Request, response: Response, next: NextFunction) => {
-    response.setHeader('X-Request-ID', randomUUID());
-    next();
-  });
+  app.use(assignRequestId);
+  app.useGlobalFilters(new HttpErrorFilter());
+  if (config.NODE_ENV === 'development' || config.API_DOCS_ENABLED === 'true') mountApiDocs(app);
   app.enableCors({ origin: config.APP_ORIGIN, credentials: true });
   app.setGlobalPrefix('v1', { exclude: ['health'] });
   await app.listen(config.PORT, '0.0.0.0');

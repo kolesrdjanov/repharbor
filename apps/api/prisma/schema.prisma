@@ -11,5 +11,84 @@ model AppUser {
   email     String   @unique
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  memberships CompanyFounder[]
+  engagements Engagement[]
+  proposedAgreements AgreementVersion[] @relation("ProposedAgreements")
+  acceptedAgreements AgreementVersion[] @relation("AcceptedAgreements")
+
   @@map("app_user")
+}
+
+model Company {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String
+  timeZone String @map("time_zone")
+  founders CompanyFounder[]
+  products Product[]
+
+  @@map("company")
+}
+
+model CompanyFounder {
+  companyId String @map("company_id") @db.Uuid
+  userId    String @map("user_id") @db.Uuid
+  company   Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      AppUser @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([companyId, userId])
+  @@index([userId, companyId], map: "founder_by_user")
+  @@map("company_founder")
+}
+
+model Product {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @map("company_id") @db.Uuid
+  name      String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  engagements Engagement[]
+
+  @@unique([companyId, id])
+  @@map("product")
+}
+
+model Engagement {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId String @map("company_id") @db.Uuid
+  productId String @map("product_id") @db.Uuid
+  repId     String? @map("rep_id") @db.Uuid
+  closedAt  DateTime? @map("closed_at") @db.Timestamptz(6)
+  product   Product @relation(fields: [companyId, productId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  rep       AppUser? @relation(fields: [repId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  agreements AgreementVersion[]
+
+  @@unique([companyId, id])
+  @@unique([companyId, productId, id])
+  @@index([repId, id], map: "engagement_by_rep")
+  @@map("engagement")
+}
+
+model AgreementVersion {
+  id                String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  engagementId      String @map("engagement_id") @db.Uuid
+  revision          Int
+  rateBps           Int @map("rate_bps")
+  accrualMode       String @map("accrual_mode")
+  basis             String
+  eligibilityMonths Int @map("eligibility_months")
+  refundPolicy      String @map("refund_policy")
+  cadence           String
+  dueDay            Int @map("due_day")
+  timeZone          String @map("time_zone")
+  effectiveAt       DateTime @map("effective_at") @db.Timestamptz(6)
+  proposedBy        String @map("proposed_by") @db.Uuid
+  founderAcceptedAt DateTime @map("founder_accepted_at") @db.Timestamptz(6)
+  repAcceptedAt     DateTime? @map("rep_accepted_at") @db.Timestamptz(6)
+  acceptedByRep     String? @map("accepted_by_rep") @db.Uuid
+  engagement        Engagement @relation(fields: [engagementId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  proposer          AppUser @relation("ProposedAgreements", fields: [proposedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  acceptingRep      AppUser? @relation("AcceptedAgreements", fields: [acceptedByRep], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([engagementId, revision])
+  @@unique([engagementId, id])
+  @@map("agreement_version")
 }

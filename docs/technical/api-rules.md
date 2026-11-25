@@ -2,6 +2,8 @@
 
 The canonical design is [openapi.yaml](openapi.yaml), written in OpenAPI 3.1.1. It covers the app-facing HTTP API, provider ingress and RepHarbor billing ingress. Internal Postgres jobs and process health probes have separate operational contracts. During C0, publish this exact document as /docs/openapi.yaml in development and render it using a compatible OpenAPI viewer at /docs. Use an environment setting for production docs exposure. The spec uses a relative /v1 server so a downloaded copy contains no secrets or environment-specific hostnames. [OpenAPI 3.1.1](https://spec.openapis.org/oas/v3.1.1.html) · [Nest OpenAPI integration](https://docs.nestjs.com/openapi/introduction)
 
+The [Konvuno reference statement](reference-statement.md) gives success, empty, and recovery cases for the shared workflows.
+
 ## Contract workflow
 
 1. The slice owner changes the named operation and reusable component before changing controller or client behavior. Each operation has a stable, unique operationId, owning task tag, access annotation, security declaration, typed success/error responses and declared inputs. Include a representative serialized example for new money or authentication flows.

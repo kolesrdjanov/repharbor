@@ -2,13 +2,17 @@
   "name": "repharbor",
   "private": true,
   "packageManager": "pnpm@11.25.0",
-  "engines": { "node": ">=24 <25" },
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "dev:api": "pnpm --filter @repharbor/api dev",
     "dev:worker": "pnpm --filter @repharbor/api dev:worker",
     "dev:app": "pnpm --filter @repharbor/app dev",
     "db:generate": "pnpm --filter @repharbor/api db:generate",
     "db:migrate": "pnpm --filter @repharbor/api db:migrate",
-    "db:seed": "pnpm --filter @repharbor/api db:seed"
+    "db:seed": "pnpm --filter @repharbor/api db:seed",
+    "contracts:generate": "pnpm --filter @repharbor/contracts generate",
+    "contracts:build": "pnpm --filter @repharbor/contracts build"
   }
 }
