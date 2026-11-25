@@ -10,7 +10,7 @@ The [work queue](README.md) identifies prerequisites. Finish the private applica
 2. Build the private Vue app for Cloudflare at app.repharbor.io and configure SPA deep-link routing. Serve the API at api.repharbor.io. Configure the exact frontend origin, credentialed session requests, canonical email-link origin, health checks, and environment-specific callback URLs. Exercise the link flow in the deployed browser context.
 3. Set up the Resend sender and verify delivery to a controlled inbox when access is available. Configure production and sandbox providers separately. Register webhooks against the correct public API endpoint. A connection's status should indicate setup or credential issues without disclosing secrets.
 4. Capture structured request and job identifiers, queue age, retry failures, sync gaps, and database health. Define backup retention and restore steps. Rehearse restore on a disposable database and replay from retained source records before accepting a live pilot.
-5. Keep deploys explicit while push-triggered CI is deferred. Document how to deploy app/API/worker, identify the running revision, and roll back to a compatible image. Record any migration that limits rollback.
+5. Keep deployments explicit regardless of which stack checks are active. Document how to deploy app/API/worker, identify the running revision, and roll back to a compatible image. Record any migration that limits rollback.
 
 **Acceptance:** A direct private app URL works after refresh, a Resend link signs in, the worker resumes a pending job after restart, and a restored test database reproduces the reference balance. If external credentials are unavailable, hand off the exact pending environment step and distinguish it from locally demonstrated behavior.
 
@@ -32,7 +32,7 @@ The [work queue](README.md) identifies prerequisites. Finish the private applica
 2. Rehearse the Konvuno/Dimitrije €230 case. Include a repeat event, two providers reporting the same purchase, an external payment submitted twice, and a rep attempting to open an unrelated account. Pair the expected amounts with the actual statement line IDs in pilot evidence.
 3. Run a full monthly statement with both parties. Compare each attributed sale and refund to the underlying provider data, each external payment to the founder's record, and the due-date calculation to the accepted terms. Track unresolved items and coverage gaps explicitly.
 4. Review setup time, manual matches, and questions about the balance. Record which integrations were exercised locally, in provider test mode, or in the pilot. A single pilot company can cover one provider; retain separate provider evidence for the other three.
-5. At final review, decide which repository-wide checks or CI jobs to introduce. Keep their cost and trigger policy explicit.
+5. At final review, confirm completed stacks have passed their audits and their scoped push checks are active. Record any outstanding external pilot evidence. Follow [phase audits and stack checks](quality.md).
 
 **Acceptance:** Both users can independently explain the same balance and its due date, identify manual payment records, and find calculation evidence for an entry. Unresolved entries have an owner and a visible status. All four adapters have the coverage evidence defined in the [provider briefs](commissions.md).
 
