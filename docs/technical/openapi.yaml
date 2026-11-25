@@ -20,6 +20,8 @@ paths:
           description: Accepted
         '400':
           $ref: '#/components/responses/E400'
+        '403':
+          $ref: '#/components/responses/E403'
         '429':
           $ref: '#/components/responses/E429'
         '500':
@@ -70,6 +72,8 @@ paths:
           $ref: '#/components/responses/E401'
         '410':
           $ref: '#/components/responses/E410'
+        '403':
+          $ref: '#/components/responses/E403'
         '429':
           $ref: '#/components/responses/E429'
         '500':
@@ -2433,6 +2437,10 @@ components:
         pendingInvitationId:
           type: string
           format: uuid
+        returnPath:
+          description: Validated relative app destination returned only on successful link exchange.
+          type: string
+          minLength: 1
     Engagement:
       type: object
       additionalProperties: false

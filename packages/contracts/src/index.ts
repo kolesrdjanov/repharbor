@@ -41,7 +41,7 @@ export function page<T extends z.ZodType>(item: T) {
 export const company = z.strictObject({ id, name: text, timeZone });
 export const product = z.strictObject({ id, companyId: id, name: text });
 export const session = z.strictObject({
-  userId: id, email, companies: z.array(company), pendingInvitationId: id.optional(),
+  userId: id, email, companies: z.array(company), pendingInvitationId: id.optional(), returnPath: text.optional(),
 });
 export const requestMagicLink: z.ZodType<operations['requestMagicLink']['requestBody']['content']['application/json']> =
   z.strictObject({
@@ -102,3 +102,5 @@ export const externalPayment = recordExternalPayment.extend({
 });
 
 export * from './reference';
+
+export { safeReturnPath } from './return-path';

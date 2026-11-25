@@ -4,6 +4,7 @@ import { Controller, Get, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { mountApiDocs } from './api-docs';
+import { AuthModule } from './auth/auth.controller';
 import { ApiError, assignRequestId, HttpErrorFilter } from './http';
 import { readConfiguration } from './config';
 import { Database, DatabaseModule } from './database';
@@ -21,13 +22,14 @@ class HealthController {
   }
 }
 
-@Module({ imports: [DatabaseModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, AuthModule], controllers: [HealthController] })
 class ApiModule {}
 
 async function bootstrap() {
   const config = readConfiguration();
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { rawBody: true });
   app.enableShutdownHooks();
+  app.set('trust proxy', config.TRUST_PROXY_HOPS);
   app.use(assignRequestId);
   app.useGlobalFilters(new HttpErrorFilter());
   if (config.NODE_ENV === 'development' || config.API_DOCS_ENABLED === 'true') mountApiDocs(app);

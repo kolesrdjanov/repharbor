@@ -45,3 +45,5 @@ A reused key with a modified amount returns HTTP 409.
 ~~~json
 {"code":"IDEMPOTENCY_CONFLICT","message":"This request key was already used for a different payment.","requestId":"req_example"}
 ~~~
+
+On successful `exchangeMagicLink`, the session includes `returnPath: "/portfolio"` when that destination was supplied to `requestMagicLink`. Keep the destination on the app's allowlist. `getSession` returns the current context without a return path.

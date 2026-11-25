@@ -671,6 +671,8 @@ export interface components {
             companies: components["schemas"]["Company"][];
             /** Format: uuid */
             pendingInvitationId?: string;
+            /** @description Validated relative app destination returned only on successful link exchange. */
+            returnPath?: string;
         };
         Engagement: {
             /** Format: uuid */
@@ -1042,6 +1044,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["E400"];
+            403: components["responses"]["E403"];
             429: components["responses"]["E429"];
             500: components["responses"]["E500"];
         };
@@ -1074,6 +1077,7 @@ export interface operations {
             };
             400: components["responses"]["E400"];
             401: components["responses"]["E401"];
+            403: components["responses"]["E403"];
             410: components["responses"]["E410"];
             429: components["responses"]["E429"];
             500: components["responses"]["E500"];

@@ -32,13 +32,13 @@ pnpm dev:worker
 pnpm dev:app
 ```
 
-Open the private app at http://localhost:5173 and check that it reports an API connection. The API and worker each check the migrated database and return `{"status":"ok"}` when available.
+Open the private app at http://localhost:5173. Request a link for `founder@konvuno.test` or `dimitrije@repharbor.test`, open it from the Mailpit inbox, and confirm explicitly. The worker delivers the email. The API and worker each check the migrated database and return `{"status":"ok"}` when available.
 
 ```sh
 curl -fsS http://localhost:3000/health
 curl -fsS http://127.0.0.1:3001/health
 ```
 
-Mailpit accepts local mail on port 1025. Open the inbox at http://127.0.0.1:8025. The example server environment uses local SMTP and deployed environments use Resend with a verified sender. Only the public API origin belongs in the app environment.
+Mailpit accepts local mail on port 1025. Open the inbox at http://127.0.0.1:8025. The example server environment uses local SMTP and deployed environments use Resend with a verified sender. Only the public API origin belongs in the app environment. Generate a unique `SECRET_ENCRYPTION_KEY` for deployed mail jobs. Keep the API and worker on the same key.
 
 Stop Node processes with Ctrl+C in their respective terminals. Stop the containers with `docker compose down`. The database volume persists across restarts.

@@ -11,6 +11,9 @@ model AppUser {
   email     String   @unique
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  sessions UserSession[]
+  invitationsSent Invitation[] @relation("InvitationsSent")
+  invitationsAccepted Invitation[] @relation("InvitationsAccepted")
   memberships CompanyFounder[]
   engagements Engagement[]
   proposedAgreements AgreementVersion[] @relation("ProposedAgreements")
@@ -60,6 +63,7 @@ model Engagement {
   product   Product @relation(fields: [companyId, productId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
   rep       AppUser? @relation(fields: [repId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   agreements AgreementVersion[]
+  invitations Invitation[]
 
   @@unique([companyId, id])
   @@unique([companyId, productId, id])
@@ -91,4 +95,76 @@ model AgreementVersion {
   @@unique([engagementId, revision])
   @@unique([engagementId, id])
   @@map("agreement_version")
+}
+
+model LoginLink {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String
+  tokenDigest  Bytes @unique @map("token_digest")
+  returnPath   String? @map("return_path")
+  expiresAt    DateTime @map("expires_at") @db.Timestamptz(6)
+  consumedAt   DateTime? @map("consumed_at") @db.Timestamptz(6)
+  invitationId String? @map("invitation_id") @db.Uuid
+  invitation   Invitation? @relation(fields: [invitationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([expiresAt], map: "login_link_by_expiry")
+  @@map("login_link")
+}
+
+model UserSession {
+  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String @map("user_id") @db.Uuid
+  tokenDigest         Bytes @unique @map("token_digest")
+  expiresAt           DateTime @map("expires_at") @db.Timestamptz(6)
+  revokedAt           DateTime? @map("revoked_at") @db.Timestamptz(6)
+  pendingInvitationId String? @map("pending_invitation_id") @db.Uuid
+  user                AppUser @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pendingInvitation   Invitation? @relation(fields: [pendingInvitationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([expiresAt], map: "user_session_by_expiry")
+  @@map("user_session")
+}
+
+model Invitation {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  senderId     String @map("sender_id") @db.Uuid
+  email        String
+  direction    String
+  engagementId String? @map("engagement_id") @db.Uuid
+  tokenDigest  Bytes @unique @map("token_digest")
+  expiresAt    DateTime @map("expires_at") @db.Timestamptz(6)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(6)
+  acceptedAt   DateTime? @map("accepted_at") @db.Timestamptz(6)
+  acceptedBy   String? @map("accepted_by") @db.Uuid
+  sender       AppUser @relation("InvitationsSent", fields: [senderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  recipient    AppUser? @relation("InvitationsAccepted", fields: [acceptedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  engagement   Engagement? @relation(fields: [engagementId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  loginLinks   LoginLink[]
+  sessions     UserSession[]
+
+  @@map("invitation")
+}
+
+model Job {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kind          String
+  dedupeKey     String @unique @map("dedupe_key")
+  args          Json
+  state         String
+  runAfter      DateTime @default(now()) @map("run_after") @db.Timestamptz(6)
+  leaseUntil    DateTime? @map("lease_until") @db.Timestamptz(6)
+  leaseToken    String? @map("lease_token") @db.Uuid
+  attempts      Int @default(0)
+  lastErrorCode String? @map("last_error_code")
+
+  @@map("job")
+}
+
+model AuthRateLimit {
+  key       String @id
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  attempts  Int
+
+  @@index([expiresAt], map: "auth_rate_limit_by_expiry")
+  @@map("auth_rate_limit")
 }

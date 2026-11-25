@@ -34,4 +34,5 @@
 @layer base {
   * { @apply border-border; }
   body { @apply bg-background text-foreground antialiased; }
+  a[aria-current="page"] { @apply bg-muted font-semibold; }
 }
