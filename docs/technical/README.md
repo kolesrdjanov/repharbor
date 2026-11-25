@@ -1,6 +1,6 @@
 # V1 technical design
 
-These are implementation targets for the [V1 work queue](../implementation/README.md). The product definitions and pilot example come from the [product specification](../RepHarbor-V1.md). The repository currently contains specifications. A documented operation becomes available when its owning slice ships.
+These are implementation targets for the [V1 work queue](../implementation/README.md). The product definitions and pilot example come from the [product specification](../RepHarbor-V1.md). Development serves the canonical API specification at `/docs`. The [phase handoffs](../implementation/handoffs) record what each slice demonstrated and the provider or release evidence still pending.
 
 | Before working on | Read | Deliver from that contract |
 |---|---|---|

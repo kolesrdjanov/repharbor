@@ -1,0 +1,107 @@
+{
+  "connection": {
+    "provider": "revenuecat",
+    "environment": "test",
+    "externalAccount": "proj_fixture_public/app_fixture"
+  },
+  "deliveries": [
+    {
+      "body": {
+        "event": {
+          "id": "rc_renewal_fixture",
+          "type": "RENEWAL",
+          "event_timestamp_ms": 1794312000000,
+          "purchased_at_ms": 1794312000000,
+          "environment": "SANDBOX",
+          "app_id": "app_fixture",
+          "app_user_id": "buyer_fixture",
+          "original_app_user_id": "$RCAnonymousID:fixture",
+          "aliases": [
+            "buyer_fixture"
+          ],
+          "store": "APP_STORE",
+          "product_id": "prod_fixture",
+          "transaction_id": "transaction_fixture",
+          "currency": "EUR",
+          "price_in_purchased_currency": 20,
+          "tax_percentage": 0.3
+        }
+      },
+      "expected": "Record the renewal with basis in review."
+    },
+    {
+      "body": {
+        "event": {
+          "id": "rc_cancel_fixture",
+          "type": "CANCELLATION",
+          "event_timestamp_ms": 1794312000000,
+          "purchased_at_ms": 1794312000000,
+          "environment": "SANDBOX",
+          "app_id": "app_fixture",
+          "app_user_id": "buyer_fixture",
+          "original_app_user_id": "$RCAnonymousID:fixture",
+          "aliases": [
+            "buyer_fixture"
+          ],
+          "store": "APP_STORE",
+          "product_id": "prod_fixture",
+          "transaction_id": "transaction_fixture",
+          "currency": "EUR",
+          "price_in_purchased_currency": 20,
+          "tax_percentage": 0.3,
+          "cancel_reason": "UNSUBSCRIBE"
+        }
+      },
+      "expected": "Post no refund."
+    },
+    {
+      "body": {
+        "event": {
+          "id": "rc_refund_fixture",
+          "type": "CANCELLATION",
+          "event_timestamp_ms": 1794312000000,
+          "purchased_at_ms": 1794312000000,
+          "environment": "SANDBOX",
+          "app_id": "app_fixture",
+          "app_user_id": "buyer_fixture",
+          "original_app_user_id": "$RCAnonymousID:fixture",
+          "aliases": [
+            "buyer_fixture"
+          ],
+          "store": "APP_STORE",
+          "product_id": "prod_fixture",
+          "transaction_id": "transaction_fixture",
+          "currency": "EUR",
+          "price_in_purchased_currency": -20,
+          "tax_percentage": 0.3,
+          "cancel_reason": "CUSTOMER_SUPPORT"
+        }
+      },
+      "expected": "Retain the refund for review."
+    },
+    {
+      "body": {
+        "event": {
+          "id": "rc_reverse_fixture",
+          "type": "REFUND_REVERSED",
+          "event_timestamp_ms": 1794312000000,
+          "purchased_at_ms": 1794312000000,
+          "environment": "SANDBOX",
+          "app_id": "app_fixture",
+          "app_user_id": "buyer_fixture",
+          "original_app_user_id": "$RCAnonymousID:fixture",
+          "aliases": [
+            "buyer_fixture"
+          ],
+          "store": "APP_STORE",
+          "product_id": "prod_fixture",
+          "transaction_id": "transaction_fixture",
+          "currency": "EUR",
+          "price_in_purchased_currency": 20,
+          "tax_percentage": 0.3
+        }
+      },
+      "expected": "Retain the refund reversal for review."
+    }
+  ]
+}

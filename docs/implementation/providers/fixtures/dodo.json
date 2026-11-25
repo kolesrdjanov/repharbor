@@ -1,0 +1,109 @@
+{
+  "connection": {
+    "provider": "dodo",
+    "environment": "test",
+    "externalAccount": "bus_fixture_public"
+  },
+  "deliveries": [
+    {
+      "body": {
+        "business_id": "bus_fixture_public",
+        "type": "payment.succeeded",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "data": {
+          "payment_id": "pay_fixture",
+          "business_id": "bus_fixture_public",
+          "status": "succeeded",
+          "total_amount": 20000,
+          "tax": 0,
+          "currency": "EUR",
+          "customer": {
+            "customer_id": "cus_fixture"
+          },
+          "created_at": "2026-11-10T12:00:00Z",
+          "subscription_ids": [
+            "sub_fixture"
+          ],
+          "service_periods": [
+            {
+              "starts_at": "2026-11-10T12:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": "Create a paid renewal collection."
+    },
+    {
+      "body": {
+        "business_id": "bus_fixture_public",
+        "type": "payment.failed",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "data": {
+          "payment_id": "pay_failed",
+          "business_id": "bus_fixture_public",
+          "status": "failed",
+          "total_amount": 20000,
+          "tax": 0,
+          "currency": "EUR",
+          "customer": {
+            "customer_id": "cus_fixture"
+          },
+          "created_at": "2026-11-10T12:00:00Z",
+          "subscription_ids": [
+            "sub_fixture"
+          ],
+          "service_periods": [
+            {
+              "starts_at": "2026-11-10T12:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": "Create no collection."
+    },
+    {
+      "body": {
+        "business_id": "bus_fixture_public",
+        "type": "payment.succeeded",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "data": {
+          "payment_id": "pay_unknown",
+          "business_id": "bus_fixture_public",
+          "status": "succeeded",
+          "total_amount": 20000,
+          "tax": null,
+          "currency": "EUR",
+          "customer": {
+            "customer_id": "cus_fixture"
+          },
+          "created_at": "2026-11-10T12:00:00Z",
+          "subscription_ids": [
+            "sub_fixture"
+          ],
+          "service_periods": [
+            {
+              "starts_at": "2026-11-10T12:00:00Z"
+            }
+          ]
+        }
+      },
+      "expected": "Show BASIS_UNKNOWN."
+    },
+    {
+      "body": {
+        "business_id": "bus_fixture_public",
+        "type": "refund.succeeded",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "data": {
+          "refund_id": "refund_fixture",
+          "payment_id": "pay_fixture",
+          "status": "succeeded",
+          "amount": 10000,
+          "currency": "EUR",
+          "created_at": "2026-11-10T12:00:00Z"
+        }
+      },
+      "expected": "Link to the original payment."
+    }
+  ]
+}

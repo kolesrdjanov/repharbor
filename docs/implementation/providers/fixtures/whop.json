@@ -1,0 +1,66 @@
+{
+  "connection": {
+    "provider": "whop",
+    "environment": "test",
+    "externalAccount": "biz_fixture_public"
+  },
+  "deliveries": [
+    {
+      "body": {
+        "id": "msg_fixture_paid",
+        "type": "payment.succeeded",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "account_id": "biz_fixture_public",
+        "data": {
+          "id": "pay_fixture",
+          "account_id": "biz_fixture_public",
+          "status": "paid",
+          "paid_at": "2026-11-10T12:00:00Z",
+          "user": {
+            "id": "user_fixture"
+          },
+          "product_id": "prod_fixture",
+          "presentment_total": {
+            "currency": "eur",
+            "amount": "75.00",
+            "decimals": 2
+          },
+          "presentment_tax_amount": null
+        }
+      },
+      "expected": "Collect 7500 minor units for the configured product."
+    },
+    {
+      "body": {
+        "id": "msg_fixture_ended",
+        "type": "membership.deactivated",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "account_id": "biz_fixture_public",
+        "data": {
+          "id": "mem_fixture"
+        }
+      },
+      "expected": "Post no refund."
+    },
+    {
+      "body": {
+        "id": "msg_fixture_refund",
+        "type": "refund.created",
+        "timestamp": "2026-11-10T12:00:00Z",
+        "account_id": "biz_fixture_public",
+        "data": {
+          "id": "rf_fixture",
+          "payment_id": "pay_fixture",
+          "status": "succeeded",
+          "original_amount": {
+            "currency": "eur",
+            "amount": "10.00",
+            "decimals": 2
+          },
+          "created_at": "2026-11-10T12:00:00Z"
+        }
+      },
+      "expected": "Link the confirmed refund to the original payment."
+    }
+  ]
+}

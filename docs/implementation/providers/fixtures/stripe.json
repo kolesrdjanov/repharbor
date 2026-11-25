@@ -1,0 +1,138 @@
+{
+  "connection": {
+    "provider": "stripe",
+    "environment": "test",
+    "externalAccount": "acct_fixture_public"
+  },
+  "deliveries": [
+    {
+      "body": {
+        "id": "evt_stripe_refund",
+        "object": "event",
+        "type": "refund.created",
+        "account": "acct_fixture_public",
+        "created": 1794312000,
+        "livemode": false,
+        "data": {
+          "object": {
+            "id": "re_fixture",
+            "currency": "eur",
+            "payment_intent": "pi_fixture",
+            "status": "succeeded",
+            "amount": 10000,
+            "created": 1794312000
+          }
+        }
+      },
+      "expected": "Wait for the original sale."
+    },
+    {
+      "body": {
+        "id": "evt_stripe_sale",
+        "object": "event",
+        "type": "invoice.paid",
+        "account": "acct_fixture_public",
+        "created": 1794312000,
+        "livemode": false,
+        "data": {
+          "object": {
+            "id": "in_fixture",
+            "customer": "cus_fixture",
+            "currency": "eur",
+            "status": "paid",
+            "amount_paid": 20000,
+            "status_transitions": {
+              "paid_at": 1794312000
+            },
+            "lines": {
+              "has_more": false,
+              "data": [
+                {
+                  "id": "il_fixture",
+                  "currency": "eur",
+                  "amount": 20000,
+                  "subtotal": 20000,
+                  "discount_amounts": [],
+                  "taxes": [],
+                  "pricing": {
+                    "price_details": {
+                      "product": "prod_fixture"
+                    }
+                  }
+                }
+              ]
+            },
+            "payments": {
+              "has_more": false,
+              "data": [
+                {
+                  "status": "paid",
+                  "amount_paid": 20000,
+                  "payment": {
+                    "type": "payment_intent",
+                    "payment_intent": "pi_fixture"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected": "Create a collection with 20000 minor units of known basis."
+    },
+    {
+      "body": {
+        "id": "evt_stripe_replay",
+        "object": "event",
+        "type": "invoice.paid",
+        "account": "acct_fixture_public",
+        "created": 1794312000,
+        "livemode": false,
+        "data": {
+          "object": {
+            "id": "in_fixture",
+            "customer": "cus_fixture",
+            "currency": "eur",
+            "status": "paid",
+            "amount_paid": 20000,
+            "status_transitions": {
+              "paid_at": 1794312000
+            },
+            "lines": {
+              "has_more": false,
+              "data": [
+                {
+                  "id": "il_fixture",
+                  "currency": "eur",
+                  "amount": 20000,
+                  "subtotal": 20000,
+                  "discount_amounts": [],
+                  "taxes": [],
+                  "pricing": {
+                    "price_details": {
+                      "product": "prod_fixture"
+                    }
+                  }
+                }
+              ]
+            },
+            "payments": {
+              "has_more": false,
+              "data": [
+                {
+                  "status": "paid",
+                  "amount_paid": 20000,
+                  "payment": {
+                    "type": "payment_intent",
+                    "payment_intent": "pi_fixture"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected": "Reuse the financial effect."
+    }
+  ]
+}
