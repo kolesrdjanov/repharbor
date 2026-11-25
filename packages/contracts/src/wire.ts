@@ -771,8 +771,15 @@ export interface components {
             reason: string;
             customerLabel: string;
             candidateClaimIds: string[];
+            candidateClaims?: {
+                /** Format: uuid */
+                id: string;
+                customerLabel: string;
+            }[];
             /** Format: date-time */
             resolvedAt?: string;
+            currency?: string;
+            amountMinor?: string;
         };
         CoverageGap: {
             /** Format: uuid */
@@ -831,6 +838,9 @@ export interface components {
             relatedEntryId?: string;
             /** Format: uuid */
             paymentId?: string;
+            /** Format: date */
+            paidOn?: string;
+            paymentReference?: string;
             /** Format: uuid */
             recordedBy?: string;
             reason?: string;

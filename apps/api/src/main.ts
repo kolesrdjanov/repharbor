@@ -10,6 +10,7 @@ import { ApiError, assignRequestId, HttpErrorFilter } from './http';
 import { readConfiguration } from './config';
 import { Database, DatabaseModule } from './database';
 import { IntegrationsModule } from './integrations/integrations.controller';
+import { LedgerModule } from './ledger/ledger.controller';
 import { EngagementModule } from './engagement/engagement.controller';
 
 @Controller('health')
@@ -25,7 +26,7 @@ class HealthController {
   }
 }
 
-@Module({ imports: [DatabaseModule, AuthModule, EngagementModule, IntegrationsModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, AuthModule, EngagementModule, IntegrationsModule, LedgerModule], controllers: [HealthController] })
 class ApiModule {}
 
 async function bootstrap() {

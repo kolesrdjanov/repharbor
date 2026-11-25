@@ -1,10 +1,11 @@
 import { Body, Controller, Get, HttpCode, Module, Param, Post, Put, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { connectProvider, id, pagination, providerName, reconnectProvider, setMappings } from '@repharbor/contracts';
+import { connectProvider, id, pagination, providerName, reconnectProvider, resolveReview, setMappings } from '@repharbor/contracts';
 import { AuthModule, checkOrigin, sessionCookie } from '../auth/auth.controller';
 import { AuthService } from '../auth/auth.service';
 import { readConfiguration } from '../config';
 import { ApiError, parseInput } from '../http';
+import { Attribution } from './attribution';
 import { Connections } from './connections';
 import { Inbox } from './inbox';
 import { Providers } from './providers';
@@ -17,6 +18,7 @@ class IntegrationsController {
     private readonly auth: AuthService,
     private readonly connections: Connections,
     private readonly inbox: Inbox,
+    private readonly attribution: Attribution,
   ) {}
 
   private async actor(req: Request) {
@@ -66,6 +68,20 @@ class IntegrationsController {
       parseInput(id, connectionId), parseInput(setMappings, body));
   }
 
+  @Get('companies/:companyId/review')
+  async review(@Req() req: Request, @Param('companyId') companyId: string, @Query() query: unknown) {
+    return this.attribution.list(await this.actor(req), parseInput(id, companyId), parseInput(pagination, query));
+  }
+
+  @Post('companies/:companyId/review/:reviewId/resolve')
+  @HttpCode(200)
+  async resolve(
+    @Req() req: Request, @Param('companyId') companyId: string, @Param('reviewId') reviewId: string, @Body() body: unknown,
+  ) {
+    return this.attribution.resolve(await this.actor(req), parseInput(id, companyId), parseInput(id, reviewId),
+      parseInput(id, req.get('Idempotency-Key')), parseInput(resolveReview, body));
+  }
+
   @Post('webhooks/:provider/:connectionId')
   @HttpCode(204)
   async receive(@Req() req: Request, @Param('provider') provider: string, @Param('connectionId') connectionId: string) {
@@ -75,6 +91,6 @@ class IntegrationsController {
 }
 
 @Module({
-  imports: [AuthModule], providers: [Providers, Connections, Inbox], controllers: [IntegrationsController],
+  imports: [AuthModule], providers: [Providers, Connections, Inbox, Attribution], controllers: [IntegrationsController],
 })
 export class IntegrationsModule {}

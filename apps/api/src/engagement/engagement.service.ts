@@ -5,6 +5,9 @@ import {
   company, product, engagementContext, engagementSummary, type createCompany, type createProduct,
   type pagination, type proposeAgreement, type registerClaim, type decideClaim,
 } from '@repharbor/contracts';
+import { readConfiguration } from '../config';
+import { engagementBalances } from '../ledger/statements';
+import { recomputeClaim } from '../ledger/commission';
 import { Database } from '../database';
 import { ApiError } from '../http';
 import { requireEngagement, requireFounder, resourceNotFound, type Actor } from './access';
@@ -19,6 +22,8 @@ const claimConflict = () => new ApiError(409, 'COMPETING_CLAIM', 'This customer 
 
 @Injectable()
 export class EngagementService {
+  private readonly environment = readConfiguration().SALES_ENVIRONMENT;
+
   constructor(private readonly db: Database) {}
 
   createCompany(actor: Actor, data: z.infer<typeof createCompany>) {
@@ -64,10 +69,15 @@ export class EngagementService {
       include: { product: { include: { company: true } }, rep: { select: { email: true } } },
       orderBy: { id: 'asc' }, take: query.limit + 1,
     });
-    return paginated(rows, query.limit, scope, (row) => engagementSummary.parse({
-      engagement: viewEngagement(row), companyName: row.product.company.name, productName: row.product.name,
-      repEmail: companyId ? row.rep?.email : undefined, balances: [],
-    }));
+    const result = paginated(rows, query.limit, scope, (row) => row);
+    const cutoff = new Date();
+    return { ...result, items: await Promise.all(result.items.map(async (row) => {
+      const balances = await engagementBalances(this.db, row.id, this.environment, cutoff, row.product.company.timeZone);
+      return engagementSummary.parse({
+        engagement: viewEngagement(row), companyName: row.product.company.name, productName: row.product.name,
+        repEmail: companyId ? row.rep?.email : undefined, balances,
+      });
+    })) };
   }
 
   async read(actor: Actor, engagementId: string) {
@@ -114,6 +124,8 @@ export class EngagementService {
         where: { id: current.id }, data: { repAcceptedAt: new Date(), acceptedByRep: actor.userId },
       });
       await audit(tx, actor, item.companyId, 'agreement', current.id, 'accept', { revision });
+      const claims = await tx.claim.findMany({ where: { engagementId, status: 'approved', links: { some: {} } }, select: { id: true } });
+      for (const claim of claims) await recomputeClaim(tx, claim.id, this.environment, actor.userId);
       return viewAgreement(accepted);
     });
   }

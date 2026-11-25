@@ -68,6 +68,7 @@ onMounted(reload);
   <nav aria-label="Engagement" class="flex flex-wrap gap-2 border-b pb-3">
     <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'terms', params: { engagementId: id } }">Terms</RouterLink></Button>
     <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'claims', params: { engagementId: id } }">Claims</RouterLink></Button>
+    <Button as-child variant="ghost" class="min-h-11"><RouterLink :to="{ name: 'statement', params: { engagementId: id } }">Statement</RouterLink></Button>
   </nav>
   <QueryStatus :busy="busy" :error="error" @retry="reload" />
   <template v-if="data">

@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { Connection, Prisma } from '@prisma/client';
 import { z } from 'zod';
+import { recomputeClaim } from '../ledger/commission';
+import { linkForEffect } from './attribution';
 import { Database } from '../database';
 import { classifyEffect } from './effects';
 import { validateSource } from './inbox';
@@ -64,6 +66,9 @@ export class IngestionWorker implements OnModuleInit, OnModuleDestroy {
       } });
       for (const item of waiting) await classifyEffect(tx, item);
     }
+    const current = await tx.saleEffect.findUniqueOrThrow({ where: { id: created.id } });
+    const link = await linkForEffect(tx, current);
+    if (link) await recomputeClaim(tx, link.claimId, source.environment);
   }
 
   private async run(job: Lease) {

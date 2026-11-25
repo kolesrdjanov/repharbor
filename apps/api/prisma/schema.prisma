@@ -14,6 +14,10 @@ model AppUser {
   sessions UserSession[]
   decisions Claim[]
   resolvedReviews ReviewItem[]
+  proposedOpeningBalances OpeningBalance[] @relation("ProposedOpening")
+  acceptedOpeningBalances OpeningBalance[] @relation("AcceptedOpening")
+  recordedPayments ExternalPayment[]
+  ledgerActions LedgerEntry[]
   auditEvents AuditEvent[]
   idempotencyRecords IdempotencyRecord[]
   invitationsSent Invitation[] @relation("InvitationsSent")
@@ -72,6 +76,9 @@ model Engagement {
   rep       AppUser? @relation(fields: [repId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   agreements AgreementVersion[]
   claims Claim[]
+  openingBalances OpeningBalance[]
+  payments ExternalPayment[]
+  ledger LedgerEntry[]
   invitations Invitation[]
 
   @@unique([companyId, id])
@@ -100,6 +107,8 @@ model AgreementVersion {
   engagement        Engagement @relation(fields: [engagementId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   proposer          AppUser @relation("ProposedAgreements", fields: [proposedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
   acceptingRep      AppUser? @relation("AcceptedAgreements", fields: [acceptedByRep], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  ledger LedgerEntry[]
 
   @@unique([engagementId, revision])
   @@unique([engagementId, id])
@@ -194,6 +203,9 @@ model Claim {
   engagement    Engagement @relation(fields: [companyId, productId, engagementId], references: [companyId, productId, id], onDelete: NoAction, onUpdate: NoAction)
   decider       AppUser? @relation(fields: [decidedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  links CustomerLink[]
+  ledger LedgerEntry[]
+
   @@unique([companyId, productId, id])
   @@unique([engagementId, id])
   @@index([engagementId, status, createdAt, id], map: "claims_by_status")
@@ -247,6 +259,7 @@ model Connection {
   events          InboundEvent[]
   effects         SaleEffect[]
   gaps            CoverageGap[]
+  customerLinks   CustomerLink[]
 
   @@unique([provider, environment, externalAccount])
   @@unique([companyId, id])
@@ -316,6 +329,7 @@ model SaleEffect {
   originalEffect      SaleEffect? @relation("OriginalEffect", fields: [originalEffectId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   relatedEffects      SaleEffect[] @relation("OriginalEffect")
   reviews             ReviewItem[]
+  ledger              LedgerEntry[]
 
   @@unique([connectionId, transactionKey, lineKey, effectKey])
   @@unique([companyId, id])
@@ -346,4 +360,93 @@ model CoverageGap {
   connection   Connection @relation(fields: [connectionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("coverage_gap")
+}
+
+model CustomerLink {
+  companyId        String @map("company_id") @db.Uuid
+  productId        String @map("product_id") @db.Uuid
+  connectionId    String @map("connection_id") @db.Uuid
+  externalCustomer String @map("external_customer")
+  claimId          String @map("claim_id") @db.Uuid
+  connection       Connection @relation(fields: [companyId, connectionId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  claim            Claim @relation(fields: [companyId, productId, claimId], references: [companyId, productId, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([connectionId, productId, externalCustomer])
+  @@map("customer_link")
+}
+
+model OpeningBalance {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  engagementId String @map("engagement_id") @db.Uuid
+  environment  String
+  currency     String @db.Char(3)
+  amountMinor  BigInt @map("amount_minor")
+  asOf         DateTime @map("as_of") @db.Date
+  note         String
+  proposedBy   String @map("proposed_by") @db.Uuid
+  acceptedBy   String? @map("accepted_by") @db.Uuid
+  acceptedAt   DateTime? @map("accepted_at") @db.Timestamptz(6)
+  engagement   Engagement @relation(fields: [engagementId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  proposer     AppUser @relation("ProposedOpening", fields: [proposedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  accepter     AppUser? @relation("AcceptedOpening", fields: [acceptedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ledger       LedgerEntry[]
+
+  @@unique([engagementId, currency, environment])
+  @@unique([engagementId, id])
+  @@map("opening_balance")
+}
+
+model ExternalPayment {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  engagementId String @map("engagement_id") @db.Uuid
+  environment  String
+  currency     String @db.Char(3)
+  amountMinor  BigInt @map("amount_minor")
+  paidOn       DateTime @map("paid_on") @db.Date
+  reference    String?
+  recordedBy   String @map("recorded_by") @db.Uuid
+  recordedAt   DateTime @default(now()) @map("recorded_at") @db.Timestamptz(6)
+  engagement   Engagement @relation(fields: [engagementId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  recorder     AppUser @relation(fields: [recordedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ledger       LedgerEntry[]
+
+  @@unique([engagementId, id])
+  @@map("external_payment")
+}
+
+model LedgerEntry {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId    String @map("company_id") @db.Uuid
+  engagementId String @map("engagement_id") @db.Uuid
+  kind         String
+  postingKey   String @unique @map("posting_key")
+  environment  String
+  currency     String @db.Char(3)
+  deltaMinor   BigInt @map("delta_minor")
+  basisMinor   BigInt? @map("basis_minor")
+  rateBps      Int? @map("rate_bps")
+  agreementId  String? @map("agreement_id") @db.Uuid
+  claimId      String? @map("claim_id") @db.Uuid
+  effectId     String? @map("effect_id") @db.Uuid
+  paymentId    String? @map("payment_id") @db.Uuid
+  openingId    String? @map("opening_id") @db.Uuid
+  reversesId   String? @unique @map("reverses_id") @db.Uuid
+  effectiveAt  DateTime @map("effective_at") @db.Timestamptz(6)
+  postedAt     DateTime @default(now()) @map("posted_at") @db.Timestamptz(6)
+  dueOn        DateTime? @map("due_on") @db.Date
+  reason       String?
+  actorId      String? @map("actor_id") @db.Uuid
+  engagement   Engagement @relation(fields: [companyId, engagementId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  agreement    AgreementVersion? @relation(fields: [engagementId, agreementId], references: [engagementId, id], onDelete: NoAction, onUpdate: NoAction)
+  claim        Claim? @relation(fields: [engagementId, claimId], references: [engagementId, id], onDelete: NoAction, onUpdate: NoAction)
+  effect       SaleEffect? @relation(fields: [companyId, effectId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  payment      ExternalPayment? @relation(fields: [engagementId, paymentId], references: [engagementId, id], onDelete: NoAction, onUpdate: NoAction)
+  opening      OpeningBalance? @relation(fields: [engagementId, openingId], references: [engagementId, id], onDelete: NoAction, onUpdate: NoAction)
+  original     LedgerEntry? @relation("Reversal", fields: [reversesId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  reversal     LedgerEntry? @relation("Reversal")
+  actor        AppUser? @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([engagementId, environment, currency, effectiveAt, id], map: "ledger_statement")
+  @@index([companyId, currency, effectiveAt], map: "ledger_company")
+  @@map("ledger_entry")
 }

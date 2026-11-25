@@ -18,6 +18,8 @@ export const router = createRouter({
         { path: 'onboarding', name: 'onboarding', meta: { title: 'Create a company' }, component: () => import('@/features/engagements/CompanySetup.vue') },
         { path: 'engagements/:engagementId/terms', name: 'terms', meta: { title: 'Agreement terms' }, component: () => import('@/features/engagements/Engagement.vue') },
         { path: 'engagements/:engagementId/claims', name: 'claims', meta: { title: 'Customer claims' }, component: () => import('@/features/engagements/Engagement.vue') },
+        { path: 'engagements/:engagementId/statement', name: 'statement', meta: { title: 'Statement' }, component: () => import('@/features/statements/Statement.vue') },
+        { path: 'engagements/:engagementId/statement/entries/:entryId', name: 'statement-entry', meta: { title: 'Statement entry' }, component: () => import('@/features/statements/EntryDetail.vue') },
         { path: 'companies/:companyId', name: 'company', meta: { title: 'Company' }, component: () => import('@/features/engagements/Company.vue') },
       ],
     },

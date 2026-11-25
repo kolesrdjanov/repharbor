@@ -2694,9 +2694,28 @@ components:
           items:
             type: string
             format: uuid
+        candidateClaims:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [id, customerLabel]
+            properties:
+              id:
+                type: string
+                format: uuid
+              customerLabel:
+                type: string
+                minLength: 1
         resolvedAt:
           type: string
           format: date-time
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        amountMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
     CoverageGap:
       type: object
       additionalProperties: false
@@ -2828,6 +2847,12 @@ components:
         paymentId:
           type: string
           format: uuid
+        paidOn:
+          type: string
+          format: date
+        paymentReference:
+          type: string
+          minLength: 1
         recordedBy:
           type: string
           format: uuid

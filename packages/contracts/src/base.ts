@@ -91,6 +91,7 @@ export const entry = z.strictObject({
   agreementId: id.optional(), customerLabel: text.optional(), source: connection.shape.provider.optional(),
   sourceTransactionRef: text.optional(), relatedEntryId: id.optional(), paymentId: id.optional(),
   recordedBy: id.optional(), reason: text.optional(),
+  paidOn: localDate.optional(), paymentReference: text.optional(),
 });
 export const statement = z.strictObject({
   engagementId: id, asOf: timestamp, balances: z.array(balance), entries: page(entry),

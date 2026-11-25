@@ -21,7 +21,8 @@ export const productMapping = z.strictObject({
 export const setMappings = z.strictObject({ items: z.array(productMapping).max(100) });
 export const reviewItem = z.strictObject({
   id, effectId: id, reason: z.string().min(1), customerLabel: z.string().min(1),
-  candidateClaimIds: z.array(id), resolvedAt: timestamp.optional(),
+  candidateClaimIds: z.array(id),
+  candidateClaims: z.array(z.strictObject({ id, customerLabel: z.string().min(1) })).optional(), resolvedAt: timestamp.optional(),
   currency: currency.optional(), amountMinor: minor.optional(),
 });
 export const resolveReview = z.discriminatedUnion('action', [
