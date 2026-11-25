@@ -13,6 +13,8 @@
     "db:migrate": "pnpm --filter @repharbor/api db:migrate",
     "db:seed": "pnpm --filter @repharbor/api db:seed",
     "contracts:generate": "pnpm --filter @repharbor/contracts generate",
-    "contracts:build": "pnpm --filter @repharbor/contracts build"
+    "contracts:build": "pnpm --filter @repharbor/contracts build",
+    "verify:backend": "pnpm contracts:build && pnpm db:generate && pnpm --filter @repharbor/api lint && pnpm --filter @repharbor/api typecheck && pnpm --filter @repharbor/api build && pnpm --filter @repharbor/api test",
+    "verify:app": "pnpm contracts:build && pnpm db:generate && pnpm --filter @repharbor/api build && pnpm --filter @repharbor/app lint && pnpm --filter @repharbor/app typecheck && pnpm --filter @repharbor/app build && pnpm --filter @repharbor/app test"
   }
 }

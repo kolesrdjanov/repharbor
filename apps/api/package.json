@@ -9,7 +9,10 @@
     "start:worker": "node dist/worker.js",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "lint": "eslint src prisma test *.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.2.12",
@@ -36,6 +39,10 @@
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "~5.9.3",
-    "@types/nodemailer": "^8.0.0"
+    "@types/nodemailer": "^8.0.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.1",
+    "globals": "^17.2.0",
+    "typescript-eslint": "^8.55.0"
   }
 }

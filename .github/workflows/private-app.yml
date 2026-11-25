@@ -1,0 +1,39 @@
+name: Verify private app
+
+on:
+  push:
+    paths:
+      - 'apps/app/**'
+      - 'apps/api/src/**'
+      - 'apps/api/prisma/**'
+      - 'apps/api/prisma.config.ts'
+      - 'apps/api/package.json'
+      - 'apps/api/test/harness.mjs'
+      - 'apps/api/test/scenario.mjs'
+      - 'packages/contracts/**'
+      - 'docs/technical/openapi.yaml'
+      - 'compose.yaml'
+      - '.node-version'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/private-app.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  private-app:
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_ORIGIN: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+      - run: corepack enable pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: docker compose up -d --wait
+      - run: pnpm --filter @repharbor/app exec playwright install --with-deps chromium
+      - run: pnpm verify:app

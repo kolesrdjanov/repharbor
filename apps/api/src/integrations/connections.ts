@@ -108,7 +108,9 @@ export class Connections {
       ...item, id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
     }));
     const cursor = decodeCursor(query.cursor, scope);
-    return paginated(rows.filter((row) => !cursor || row.id > cursor), query.limit, scope, ({ id: _id, ...mapping }) => mapping);
+    return paginated(rows.filter((row) => !cursor || row.id > cursor), query.limit, scope, (row) => ({
+      productId: row.productId, externalProduct: row.externalProduct, channel: row.channel, authoritative: row.authoritative,
+    }));
   }
 
   setMappings(actor: Actor, companyId: string, id: string, input: z.infer<typeof setMappings>) {
