@@ -62,10 +62,10 @@ Roles apply within a company and an engagement. One person can run one company a
 
 | Component | Technology and responsibilities |
 |---|---|
-| App | Vue 3, TypeScript, Vite, Vue Router, Tailwind, Zod, and Pinia. Use shadcn-vue exclusively for UI components. Deploy on Cloudflare. |
+| App | Vue 3, TypeScript, Vite, Vue Router, Tailwind, Zod, and Pinia. Use monochrome shadcn-vue components exclusively. Apply UI UX Pro Max and Chrome Modern Web Guidance when building web UI. Deploy on Cloudflare. |
 | Public website | Nuxt on Cloudflare. Serve crawlable HTML, stable URLs, canonical links, a sitemap, and pages explaining integrations and commission rules. Serve the public site and private app on separate hostnames. |
 | Backend | NestJS, Prisma ORM, and Docker on Railway. Proposed deployment uses PostgreSQL, one backend repository, and one image for the API and background worker. |
-| Identity and email | Evaluate the authentication implementation used in the existing startups. Use Resend for invitations and notifications. Enforce company and engagement permissions on every server-side read and write. |
+| Identity and email | Use passwordless email magic links for sign-in and sign-up. Use Resend for authentication emails, invitations, and notifications. Enforce company and engagement permissions on every server-side read and write. |
 | RepHarbor billing | Use Stripe to bill companies for their RepHarbor subscription. Keep this billing data separate from provider accounts connected to track customer sales. Pricing and the commercial launch date remain open. |
 
 **Data model.** The core records are user, company, membership, product, engagement, agreement version, customer claim, provider customer mapping, source transaction, commission entry, and external payment record. A sale and the provider event reporting it have distinct identities. This lets the system recognize a repeated event and match a later refund to the original sale.
@@ -84,7 +84,9 @@ Roles apply within a company and an engagement. One person can run one company a
 | 2. Engagement workflow | Accounts, companies, portfolios, invitations, agreement acceptance, and customer claims | Two users can agree on terms for one product. Access checks cover an unrelated company and another rep. |
 | 3. First complete statement | The pilot company's first provider, customer matching, commission entries, balances, and external payment records | Both users reach the €230 reference balance. Replaying a provider event or submitting a payment record twice leaves the balance correct. |
 | 4. Remaining integrations | The same workflow across Stripe, Dodo Payments, Whop, and RevenueCat, with provider-specific limitations visible | Each provider has a verified example. Overlapping sources accrue commission once. The founder can identify a disconnected integration or an unmatched transaction. |
-| 5. Pilot and release | One complete statement cycle, the public Nuxt site, and a final operational review | Founder and rep reconcile the statement to source data, inspect adjustments, and see the same outstanding balance after an external payment is recorded. |
+| 5. Pilot and release | One complete statement cycle and a final operational review | Founder and rep reconcile the statement to source data, inspect adjustments, and see the same outstanding balance after an external payment is recorded. |
+
+Build the public Nuxt website after the application pilot and release work. The [implementation plan](implementation/README.md) defines work packages, dependencies, and handoffs.
 
 **Pilot measures.** Track time from invitation to agreement acceptance, the number of payments that require manual matching, and how often the rep needs to ask the founder to explain a balance. The main success signal is that both parties can complete their first monthly statement independently and use RepHarbor again in the next cycle.
 
