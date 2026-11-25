@@ -14,6 +14,12 @@ const configuration = z.object({
   API_ORIGIN: origin,
   API_DOCS_ENABLED: z.enum(['true', 'false']).default('false'),
   PORT: port,
+  BILLING_ENABLED: z.enum(['true', 'false']).default('false'),
+  BILLING_ENVIRONMENT: z.enum(['test', 'live']).default('test'),
+  BILLING_ALLOW_LIVE_CHECKOUT: z.enum(['true', 'false']).default('false'),
+  BILLING_STRIPE_KEY: z.string().min(1).optional(),
+  BILLING_WEBHOOK_SECRET: z.string().min(1).optional(),
+  BILLING_PRICE_ID: z.string().min(1).optional(),
   SALES_ENVIRONMENT: z.enum(['test', 'live']).default('test'),
   ALLOW_LOCAL_PROVIDER_FIXTURES: z.enum(['true', 'false']).default('false'),
   WORKER_HEALTH_PORT: port,
@@ -33,6 +39,14 @@ const configuration = z.object({
   }
   if (env.MAIL_TRANSPORT === 'resend' && !env.RESEND_API_KEY) {
     context.addIssue({ code: 'custom', path: ['RESEND_API_KEY'], message: 'Required for Resend.' });
+  }
+  if (env.BILLING_ENABLED === 'true') {
+    const key = env.BILLING_ENVIRONMENT === 'live' ? /^(sk|rk)_live_/ : /^(sk|rk)_test_/;
+    if (!env.BILLING_WEBHOOK_SECRET?.startsWith('whsec_')
+      || !env.BILLING_PRICE_ID?.startsWith('price_')
+      || !key.test(env.BILLING_STRIPE_KEY ?? '')) {
+      context.addIssue({ code: 'custom', path: ['BILLING_ENABLED'], message: 'Billing needs a matching API key, webhook secret and price.' });
+    }
   }
   if (env.NODE_ENV === 'production' && (env.ALLOW_LOCAL_PROVIDER_FIXTURES === 'true' || env.SALES_ENVIRONMENT !== 'live')) {
     context.addIssue({ code: 'custom', path: ['SALES_ENVIRONMENT'], message: 'Production uses live sales and disables fixtures.' });

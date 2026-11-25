@@ -23,8 +23,19 @@ export function parseInput<T>(schema: z.ZodType<T>, value: unknown): T {
   throw new ApiError(400, 'INVALID_REQUEST', 'Check the submitted information.', fieldErrors);
 }
 
-export function assignRequestId(_request: Request, response: Response, next: NextFunction) {
-  response.setHeader('X-Request-ID', randomUUID());
+const requests = new Logger('HTTP');
+
+export function assignRequestId(request: Request, response: Response, next: NextFunction) {
+  const requestId = randomUUID();
+  const started = performance.now();
+  response.setHeader('X-Request-ID', requestId);
+  response.on('finish', () => {
+    if (response.statusCode < 400 && request.method === 'GET' && request.path === '/health') return;
+    requests.log(JSON.stringify({
+      requestId, method: request.method, status: response.statusCode,
+      durationMs: Math.round(performance.now() - started),
+    }));
+  });
   next();
 }
 

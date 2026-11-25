@@ -2174,6 +2174,10 @@ paths:
                   status:
                     type: string
                     minLength: 1
+                  checkoutAvailable:
+                    type: boolean
+                  portalAvailable:
+                    type: boolean
                   currentPeriodEnd:
                     type: string
                     format: date-time

@@ -30,7 +30,7 @@ async function bootstrap() {
     await context.close();
     process.exitCode = 1;
   });
-  health.listen(config.WORKER_HEALTH_PORT, '127.0.0.1', () => {
+  health.listen(config.WORKER_HEALTH_PORT, config.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1', () => {
     Logger.log(`Readiness listening on port ${config.WORKER_HEALTH_PORT}`, 'Worker');
   });
   const shutdown = () => health.close(() => void context.close());

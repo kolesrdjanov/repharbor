@@ -2439,6 +2439,8 @@ export interface operations {
                 content: {
                     "application/json": {
                         status: string;
+                        checkoutAvailable?: boolean;
+                        portalAvailable?: boolean;
                         /** Format: date-time */
                         currentPeriodEnd?: string;
                     };

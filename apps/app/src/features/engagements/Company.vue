@@ -47,6 +47,7 @@ onMounted(() => { if (company.value) void reload(); });
     <div class="flex flex-wrap gap-2">
       <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'integrations', params: { companyId } }">Integrations</RouterLink></Button>
       <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'review', params: { companyId } }">Review sales</RouterLink></Button>
+      <Button as-child variant="outline" class="h-11"><RouterLink :to="{ name: 'billing', params: { companyId } }">Subscription</RouterLink></Button>
     </div>
     <QueryStatus :busy="busy" :error="error" @retry="reload" />
     <EngagementList v-if="data" :items="data.engagements" founder />

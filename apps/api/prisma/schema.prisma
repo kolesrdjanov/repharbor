@@ -38,6 +38,7 @@ model Company {
   products Product[]
   connections Connection[]
   auditEvents AuditEvent[]
+  billingAccounts BillingAccount[]
 
   @@map("company")
 }
@@ -449,4 +450,29 @@ model LedgerEntry {
   @@index([engagementId, environment, currency, effectiveAt, id], map: "ledger_statement")
   @@index([companyId, currency, effectiveAt], map: "ledger_company")
   @@map("ledger_entry")
+}
+
+model BillingAccount {
+  companyId        String @map("company_id") @db.Uuid
+  environment      String
+  stripeCustomer   String @unique @map("stripe_customer")
+  stripeSubscription String? @unique @map("stripe_subscription")
+  currentPeriodEnd DateTime? @map("current_period_end") @db.Timestamptz(6)
+  status           String
+  updatedAt        DateTime @map("updated_at") @db.Timestamptz(6)
+  lastEventCreated BigInt @default(0) @map("last_event_created")
+  company          Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([companyId, environment])
+  @@map("billing_account")
+}
+
+model BillingEvent {
+  externalEvent String @map("external_event")
+  environment   String
+  receivedAt    DateTime @default(now()) @map("received_at") @db.Timestamptz(6)
+  payload       Json
+
+  @@id([environment, externalEvent])
+  @@map("billing_event")
 }

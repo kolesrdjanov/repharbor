@@ -6,6 +6,7 @@ import express from 'express';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { mountApiDocs } from './api-docs';
 import { AuthModule } from './auth/auth.controller';
+import { BillingModule } from './billing/billing';
 import { ApiError, assignRequestId, HttpErrorFilter } from './http';
 import { readConfiguration } from './config';
 import { Database, DatabaseModule } from './database';
@@ -26,7 +27,7 @@ class HealthController {
   }
 }
 
-@Module({ imports: [DatabaseModule, AuthModule, EngagementModule, IntegrationsModule, LedgerModule], controllers: [HealthController] })
+@Module({ imports: [DatabaseModule, AuthModule, EngagementModule, IntegrationsModule, LedgerModule, BillingModule], controllers: [HealthController] })
 class ApiModule {}
 
 async function bootstrap() {

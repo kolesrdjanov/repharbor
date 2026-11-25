@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaPg } from '@prisma/adapter-pg';
+import { databaseAdapter } from '../src/adapter';
 import { PrismaClient } from '@prisma/client';
 import { founderSession, proposedAgreement, referenceCompany, referenceIds, repSession } from '@repharbor/contracts';
 
@@ -9,7 +9,7 @@ async function seed() {
     throw new Error('The development seed requires a local database and NODE_ENV=development.');
   }
 
-  const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url.href }) });
+  const prisma = new PrismaClient({ adapter: databaseAdapter(url.href) });
   try {
     await prisma.$transaction(async (tx) => {
       const accounts = [
