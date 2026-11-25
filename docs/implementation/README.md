@@ -39,3 +39,7 @@ Start with [the product specification](../RepHarbor-V1.md). This queue turns the
 | Commission | The spec's proposed collected-payment basis. Pilot fixture has 20%, 12 months, monthly statements, due on the 10th of the following month. Calculate using the company's selected time zone. | Founder and rep accept explicit terms. Confirm fee basis, rounding, amendment treatment, and initial historical coverage before using real balances. A direct MRR/ARR model remains an open product decision. |
 | Amendments and history | For the fixture, a new version applies to collections on or after its effective date once accepted. Refunds follow the original sale. Set the fixture's opening balance to zero at a known coverage date. | Record the actual policy in the agreement. For incomplete historical data, show the coverage date and keep the opening balance unresolved until explicitly agreed. |
 | External access | Develop with synthetic records, test-mode accounts, and local mail capture. Keep each external dependency attached to its task. | Resend sender verification, provider test credentials or fixtures, a pilot product, and deployment access are needed at their respective milestones. Continue independent tasks while access is pending. |
+
+## Engineering contracts
+
+Read the [technical design](../technical/README.md) for the schema, transaction boundaries, OpenAPI contract, and per-screen API map. Use the task IDs in this queue to find the corresponding module and handoff.

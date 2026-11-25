@@ -1,0 +1,3149 @@
+openapi: 3.1.1
+info:
+  title: RepHarbor API
+  version: 0.1.0
+  description: V1 target contract. Monetary amounts are decimal integer strings in minor units. See api-rules.md for authorization,
+    cursor, and retry semantics.
+servers:
+- url: /v1
+paths:
+  /auth/magic-links:
+    post:
+      tags:
+      - A1
+      operationId: requestMagicLink
+      summary: Request a sign-in email
+      x-access: public
+      security: []
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          $ref: '#/components/responses/E400'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                returnPath:
+                  type: string
+                  minLength: 1
+                invitationToken:
+                  type: string
+                  minLength: 1
+  /auth/sessions:
+    post:
+      tags:
+      - A1
+      operationId: exchangeMagicLink
+      summary: Exchange a single-use token for a session
+      x-access: public
+      security: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          headers:
+            Set-Cookie:
+              description: Host-only HttpOnly session cookie; Secure in deployed environments.
+              schema:
+                type: string
+                minLength: 1
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '410':
+          $ref: '#/components/responses/E410'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - token
+              properties:
+                token:
+                  type: string
+                  minLength: 1
+  /auth/session:
+    get:
+      tags:
+      - A1
+      operationId: getSession
+      summary: Get identity and founder memberships
+      x-access: member
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+    delete:
+      tags:
+      - A1
+      operationId: signOut
+      summary: Revoke the current session
+      x-access: member
+      security:
+      - sessionCookie: []
+      responses:
+        '204':
+          description: Completed
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+  /companies:
+    post:
+      tags:
+      - B2
+      operationId: createCompany
+      summary: Create a company and founder membership
+      x-access: member
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - name
+              - timeZone
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                timeZone:
+                  type: string
+                  minLength: 1
+  /companies/{companyId}/products:
+    get:
+      tags:
+      - B2
+      operationId: listProducts
+      summary: List products for this company
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+    post:
+      tags:
+      - B2
+      operationId: createProduct
+      summary: Create a product
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+  /companies/{companyId}/invitations:
+    post:
+      tags:
+      - B2
+      operationId: inviteRep
+      summary: Create the proposed engagement, terms, and rep invitation
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - email
+              - productId
+              - terms
+              properties:
+                email:
+                  type: string
+                  format: email
+                productId:
+                  type: string
+                  format: uuid
+                terms:
+                  type: object
+                  additionalProperties: false
+                  required:
+                  - rateBps
+                  - basis
+                  - accrualMode
+                  - eligibilityMonths
+                  - refundPolicy
+                  - cadence
+                  - dueDay
+                  - timeZone
+                  - effectiveAt
+                  properties:
+                    rateBps:
+                      type: integer
+                      minimum: 0
+                      maximum: 10000
+                    basis:
+                      type: string
+                      enum:
+                      - collected_ex_tax_before_fees
+                    accrualMode:
+                      type: string
+                      enum:
+                      - first_payment
+                      - recurring
+                    eligibilityMonths:
+                      type: integer
+                      minimum: 1
+                    refundPolicy:
+                      type: string
+                      enum:
+                      - reverse_original_rate
+                    cadence:
+                      type: string
+                      enum:
+                      - monthly
+                    dueDay:
+                      type: integer
+                      minimum: 1
+                      maximum: 28
+                    timeZone:
+                      type: string
+                      minLength: 1
+                    effectiveAt:
+                      type: string
+                      format: date-time
+  /portfolio/invitations:
+    post:
+      tags:
+      - B2
+      operationId: inviteFounder
+      summary: Invite a founder to start an engagement
+      x-access: member
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - email
+              properties:
+                email:
+                  type: string
+                  format: email
+  /invitations/preview:
+    post:
+      tags:
+      - B2
+      operationId: previewInvitation
+      summary: Preview an invitation addressed to this account
+      x-access: invitee
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - invitation
+                properties:
+                  invitation:
+                    $ref: '#/components/schemas/Invitation'
+                  companyName:
+                    type: string
+                    minLength: 1
+                  productName:
+                    type: string
+                    minLength: 1
+                  terms:
+                    $ref: '#/components/schemas/AgreementVersion'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '410':
+          $ref: '#/components/responses/E410'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                additionalProperties: false
+                required:
+                - token
+                properties:
+                  token:
+                    type: string
+                    minLength: 1
+              - type: object
+                additionalProperties: false
+                required:
+                - invitationId
+                properties:
+                  invitationId:
+                    type: string
+                    format: uuid
+  /invitations/accept:
+    post:
+      tags:
+      - B2
+      operationId: acceptInvitation
+      summary: Join the engagement; agreement acceptance is a separate action
+      x-access: invitee
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Engagement'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '410':
+          $ref: '#/components/responses/E410'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                additionalProperties: false
+                required:
+                - token
+                properties:
+                  token:
+                    type: string
+                    minLength: 1
+                  companyId:
+                    type: string
+                    format: uuid
+                  productId:
+                    type: string
+                    format: uuid
+              - type: object
+                additionalProperties: false
+                required:
+                - invitationId
+                properties:
+                  invitationId:
+                    type: string
+                    format: uuid
+                  companyId:
+                    type: string
+                    format: uuid
+                  productId:
+                    type: string
+                    format: uuid
+  /invitations/{invitationId}/revoke:
+    post:
+      tags:
+      - B2
+      operationId: revokeInvitation
+      summary: Revoke a pending invitation
+      x-access: sender
+      security:
+      - sessionCookie: []
+      responses:
+        '204':
+          description: Completed
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: invitationId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /companies/{companyId}/engagements:
+    get:
+      tags:
+      - U4
+      operationId: getCompanyDashboard
+      summary: List engagements and per-currency balances
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+  /portfolio/engagements:
+    get:
+      tags:
+      - U4
+      operationId: getRepPortfolio
+      summary: List engagements and per-currency balances
+      x-access: member
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngagementPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+  /engagements/{engagementId}:
+    get:
+      tags:
+      - B2
+      operationId: getEngagement
+      summary: Read an engagement and applicable role
+      x-access: participant
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - engagement
+                - viewerRole
+                properties:
+                  engagement:
+                    $ref: '#/components/schemas/Engagement'
+                  viewerRole:
+                    type: string
+                    enum:
+                    - founder
+                    - rep
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /engagements/{engagementId}/agreements:
+    get:
+      tags:
+      - B2
+      operationId: listAgreementVersions
+      summary: List proposals and accepted versions
+      x-access: participant
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+    post:
+      tags:
+      - B2
+      operationId: proposeAgreement
+      summary: Propose and sign a new terms version
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementVersion'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - previousRevision
+              - terms
+              properties:
+                previousRevision:
+                  type: integer
+                  minimum: 0
+                terms:
+                  type: object
+                  additionalProperties: false
+                  required:
+                  - rateBps
+                  - basis
+                  - accrualMode
+                  - eligibilityMonths
+                  - refundPolicy
+                  - cadence
+                  - dueDay
+                  - timeZone
+                  - effectiveAt
+                  properties:
+                    rateBps:
+                      type: integer
+                      minimum: 0
+                      maximum: 10000
+                    basis:
+                      type: string
+                      enum:
+                      - collected_ex_tax_before_fees
+                    accrualMode:
+                      type: string
+                      enum:
+                      - first_payment
+                      - recurring
+                    eligibilityMonths:
+                      type: integer
+                      minimum: 1
+                    refundPolicy:
+                      type: string
+                      enum:
+                      - reverse_original_rate
+                    cadence:
+                      type: string
+                      enum:
+                      - monthly
+                    dueDay:
+                      type: integer
+                      minimum: 1
+                      maximum: 28
+                    timeZone:
+                      type: string
+                      minLength: 1
+                    effectiveAt:
+                      type: string
+                      format: date-time
+  /engagements/{engagementId}/agreements/{agreementId}/accept:
+    post:
+      tags:
+      - B2
+      operationId: acceptAgreement
+      summary: Accept the current proposal
+      x-access: rep
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgreementVersion'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: agreementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - revision
+              properties:
+                revision:
+                  type: integer
+                  minimum: 0
+  /engagements/{engagementId}/close:
+    post:
+      tags:
+      - B2
+      operationId: closeEngagement
+      summary: Close intake and retain existing rights
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Engagement'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /engagements/{engagementId}/claims:
+    get:
+      tags:
+      - B2
+      operationId: listClaims
+      summary: List registered prospects
+      x-access: participant
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClaimPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+    post:
+      tags:
+      - B2
+      operationId: registerClaim
+      summary: Register a prospect for this engagement
+      x-access: rep
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - customerLabel
+              properties:
+                customerLabel:
+                  type: string
+                  minLength: 1
+                contactEmail:
+                  type: string
+                  format: email
+  /engagements/{engagementId}/claims/{claimId}/decision:
+    post:
+      tags:
+      - B2
+      operationId: decideClaim
+      summary: Approve a claim or decline it with a reason
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Claim'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: claimId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                additionalProperties: false
+                required:
+                - decision
+                properties:
+                  decision:
+                    type: string
+                    enum:
+                    - approved
+              - type: object
+                additionalProperties: false
+                required:
+                - decision
+                - reason
+                properties:
+                  decision:
+                    type: string
+                    enum:
+                    - declined
+                  reason:
+                    type: string
+                    minLength: 1
+  /companies/{companyId}/connections:
+    get:
+      tags:
+      - I3
+      operationId: listConnections
+      summary: List masked connection metadata
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+    post:
+      tags:
+      - I3
+      operationId: connectProvider
+      summary: Connect and verify a provider account
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '422':
+          $ref: '#/components/responses/E422'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - provider
+              - environment
+              - externalAccount
+              - credentials
+              properties:
+                provider:
+                  type: string
+                  enum:
+                  - stripe
+                  - dodo
+                  - whop
+                  - revenuecat
+                environment:
+                  type: string
+                  enum:
+                  - live
+                  - test
+                externalAccount:
+                  type: string
+                  minLength: 1
+                credentials:
+                  type: object
+                  additionalProperties: false
+                  required: []
+                  properties:
+                    apiKey:
+                      type: string
+                      writeOnly: true
+                      minLength: 1
+                    webhookSecret:
+                      type: string
+                      writeOnly: true
+                      minLength: 1
+                    authorizationToken:
+                      type: string
+                      writeOnly: true
+                      minLength: 1
+                  minProperties: 1
+  /companies/{companyId}/connections/{connectionId}/reconnect:
+    post:
+      tags:
+      - I3
+      operationId: reconnectProvider
+      summary: Rotate credentials and verify the original account
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '422':
+          $ref: '#/components/responses/E422'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - credentials
+              properties:
+                credentials:
+                  type: object
+                  additionalProperties: false
+                  required: []
+                  properties:
+                    apiKey:
+                      type: string
+                      writeOnly: true
+                      minLength: 1
+                    webhookSecret:
+                      type: string
+                      writeOnly: true
+                      minLength: 1
+                    authorizationToken:
+                      type: string
+                      writeOnly: true
+                      minLength: 1
+                  minProperties: 1
+  /companies/{companyId}/connections/{connectionId}/disconnect:
+    post:
+      tags:
+      - I3
+      operationId: disconnectProvider
+      summary: Stop synchronization and preserve history
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connection'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /companies/{companyId}/connections/{connectionId}/mappings:
+    get:
+      tags:
+      - F5
+      operationId: listMappings
+      summary: List product and source mappings
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MappingPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+    put:
+      tags:
+      - F5
+      operationId: setMappings
+      summary: Replace mappings for this connection
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MappingPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ProductMapping'
+  /companies/{companyId}/review:
+    get:
+      tags:
+      - F5
+      operationId: listReviewItems
+      summary: List transactions needing attribution or source review
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewPage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+  /companies/{companyId}/review/{reviewId}/resolve:
+    post:
+      tags:
+      - F5
+      operationId: resolveReviewItem
+      summary: Resolve attribution or dismiss an ineligible effect
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewItem'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '422':
+          $ref: '#/components/responses/E422'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+                additionalProperties: false
+                required:
+                - action
+                - claimId
+                - reason
+                properties:
+                  action:
+                    type: string
+                    enum:
+                    - assign_claim
+                  claimId:
+                    type: string
+                    format: uuid
+                  reason:
+                    type: string
+                    minLength: 1
+              - type: object
+                additionalProperties: false
+                required:
+                - action
+                - reason
+                properties:
+                  action:
+                    type: string
+                    enum:
+                    - mark_ineligible
+                  reason:
+                    type: string
+                    minLength: 1
+  /companies/{companyId}/connections/{connectionId}/coverage:
+    get:
+      tags:
+      - R5
+      operationId: getCoverage
+      summary: List coverage gaps
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoveragePage'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+  /companies/{companyId}/connections/{connectionId}/backfills:
+    post:
+      tags:
+      - R5
+      operationId: requestBackfill
+      summary: Schedule a bounded reconciliation window
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '202':
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - jobId
+                properties:
+                  jobId:
+                    type: string
+                    format: uuid
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '422':
+          $ref: '#/components/responses/E422'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - start
+              - end
+              properties:
+                start:
+                  type: string
+                  format: date-time
+                end:
+                  type: string
+                  format: date-time
+  /engagements/{engagementId}/statement:
+    get:
+      tags:
+      - L4
+      operationId: getStatement
+      summary: Get balances and a page of entries at a cutoff
+      x-access: participant
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statement'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: cursor
+        in: query
+        schema:
+          type: string
+          minLength: 1
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+      - name: asOf
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: currency
+        in: query
+        schema:
+          type: string
+          pattern: ^[A-Z]{3}$
+  /engagements/{engagementId}/entries/{entryId}:
+    get:
+      tags:
+      - L4
+      operationId: getStatementEntry
+      summary: Explain one entry including source and calculation
+      x-access: participant
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementEntry'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: entryId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /engagements/{engagementId}/payments:
+    post:
+      tags:
+      - L4
+      operationId: recordExternalPayment
+      summary: Record money already paid outside RepHarbor
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExternalPayment'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '422':
+          $ref: '#/components/responses/E422'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - currency
+              - amountMinor
+              - paidOn
+              properties:
+                currency:
+                  type: string
+                  pattern: ^[A-Z]{3}$
+                amountMinor:
+                  type: string
+                  pattern: ^[1-9][0-9]*$
+                paidOn:
+                  type: string
+                  format: date
+                reference:
+                  type: string
+                  minLength: 1
+            example:
+              currency: EUR
+              amountMinor: '15000'
+              paidOn: '2026-11-18'
+              reference: November commission
+  /engagements/{engagementId}/payments/{paymentId}/reverse:
+    post:
+      tags:
+      - L4
+      operationId: reverseExternalPayment
+      summary: Reverse an incorrect payment record
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatementEntry'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: paymentId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - reason
+              properties:
+                reason:
+                  type: string
+                  minLength: 1
+  /engagements/{engagementId}/opening-balances:
+    post:
+      tags:
+      - R5
+      operationId: proposeOpeningBalance
+      summary: Propose the opening balance at the coverage boundary
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpeningBalance'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+              - currency
+              - amountMinor
+              - asOf
+              - note
+              properties:
+                currency:
+                  type: string
+                  pattern: ^[A-Z]{3}$
+                amountMinor:
+                  type: string
+                  pattern: ^(0|-?[1-9][0-9]*)$
+                asOf:
+                  type: string
+                  format: date
+                note:
+                  type: string
+                  minLength: 1
+    get:
+      tags:
+      - R5
+      operationId: listOpeningBalances
+      summary: Read opening balances and acknowledgment state
+      x-access: participant
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpeningBalance'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /engagements/{engagementId}/opening-balances/{openingId}/accept:
+    post:
+      tags:
+      - R5
+      operationId: acceptOpeningBalance
+      summary: Acknowledge and post an opening balance
+      x-access: rep
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpeningBalance'
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: engagementId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: openingId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /companies/{companyId}/billing:
+    get:
+      tags:
+      - S6
+      operationId: getBilling
+      summary: Read the company subscription state
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - status
+                properties:
+                  status:
+                    type: string
+                    minLength: 1
+                  currentPeriodEnd:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /companies/{companyId}/billing/checkout:
+    post:
+      tags:
+      - S6
+      operationId: startCheckout
+      summary: Create a Stripe-hosted billing session
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - url
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /companies/{companyId}/billing/portal:
+    post:
+      tags:
+      - S6
+      operationId: openBillingPortal
+      summary: Create a Stripe-hosted billing session
+      x-access: founder
+      security:
+      - sessionCookie: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required:
+                - url
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '404':
+          $ref: '#/components/responses/E404'
+        '409':
+          $ref: '#/components/responses/E409'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          format: uuid
+  /webhooks/{provider}/{connectionId}:
+    post:
+      tags:
+      - I3
+      operationId: receiveSalesEvent
+      summary: Authenticate the raw vendor envelope and persist before acknowledgment
+      x-access: provider
+      security: []
+      responses:
+        '204':
+          description: Completed
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - stripe
+          - dodo
+          - whop
+          - revenuecat
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      description: Uses provider-specific authentication on the raw HTTP request. No browser session. The application authenticates
+        the configured source before accepting an event. See backend.md.
+      x-provider-auth: connection-specific
+  /billing/webhooks/stripe:
+    post:
+      tags:
+      - S6
+      operationId: receiveBillingEvent
+      summary: Authenticate the raw vendor envelope and persist before acknowledgment
+      x-access: provider
+      security: []
+      responses:
+        '204':
+          description: Completed
+        '400':
+          $ref: '#/components/responses/E400'
+        '401':
+          $ref: '#/components/responses/E401'
+        '403':
+          $ref: '#/components/responses/E403'
+        '429':
+          $ref: '#/components/responses/E429'
+        '500':
+          $ref: '#/components/responses/E500'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      description: Uses provider-specific authentication on the raw HTTP request. No browser session. The application authenticates
+        the configured source before accepting an event. See backend.md.
+      x-provider-auth: stripe-billing-signature
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: rh_session
+  schemas:
+    Company:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - timeZone
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+        timeZone:
+          type: string
+          minLength: 1
+    Product:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - companyId
+      - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 1
+    Session:
+      type: object
+      additionalProperties: false
+      required:
+      - userId
+      - email
+      - companies
+      properties:
+        userId:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        companies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Company'
+        pendingInvitationId:
+          type: string
+          format: uuid
+    Engagement:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - companyId
+      - productId
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        repId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - invited
+          - active
+          - closed
+    AgreementVersion:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - engagementId
+      - revision
+      - rateBps
+      - basis
+      - accrualMode
+      - eligibilityMonths
+      - refundPolicy
+      - cadence
+      - dueDay
+      - timeZone
+      - effectiveAt
+      - founderAcceptedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        engagementId:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 0
+        rateBps:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        basis:
+          type: string
+          enum:
+          - collected_ex_tax_before_fees
+        accrualMode:
+          type: string
+          enum:
+          - first_payment
+          - recurring
+        eligibilityMonths:
+          type: integer
+          minimum: 1
+        refundPolicy:
+          type: string
+          enum:
+          - reverse_original_rate
+        cadence:
+          type: string
+          enum:
+          - monthly
+        dueDay:
+          type: integer
+          minimum: 1
+          maximum: 28
+        timeZone:
+          type: string
+          minLength: 1
+        effectiveAt:
+          type: string
+          format: date-time
+        founderAcceptedAt:
+          type: string
+          format: date-time
+        repAcceptedAt:
+          type: string
+          format: date-time
+    Invitation:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - direction
+      - expiresAt
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        direction:
+          type: string
+          enum:
+          - invite_rep
+          - invite_founder
+        expiresAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+          - pending
+          - accepted
+          - revoked
+          - expired
+        engagementId:
+          type: string
+          format: uuid
+    Claim:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - engagementId
+      - customerLabel
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        engagementId:
+          type: string
+          format: uuid
+        customerLabel:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - pending
+          - approved
+          - declined
+        contactEmail:
+          type: string
+          format: email
+        reason:
+          type: string
+          minLength: 1
+    Connection:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - companyId
+      - provider
+      - environment
+      - externalAccount
+      - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyId:
+          type: string
+          format: uuid
+        provider:
+          type: string
+          enum:
+          - stripe
+          - dodo
+          - whop
+          - revenuecat
+        environment:
+          type: string
+          enum:
+          - test
+          - live
+        externalAccount:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - pending
+          - active
+          - degraded
+          - disconnected
+        coverageFrom:
+          type: string
+          format: date-time
+        lastDeliveryAt:
+          type: string
+          format: date-time
+        reconciledAt:
+          type: string
+          format: date-time
+    ProductMapping:
+      type: object
+      additionalProperties: false
+      required:
+      - productId
+      - externalProduct
+      - channel
+      - authoritative
+      properties:
+        productId:
+          type: string
+          format: uuid
+        externalProduct:
+          type: string
+          minLength: 1
+        channel:
+          type: string
+          minLength: 1
+        authoritative:
+          type: boolean
+    ReviewItem:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - effectId
+      - reason
+      - customerLabel
+      - candidateClaimIds
+      properties:
+        id:
+          type: string
+          format: uuid
+        effectId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+        customerLabel:
+          type: string
+          minLength: 1
+        candidateClaimIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        resolvedAt:
+          type: string
+          format: date-time
+    CoverageGap:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - startsAt
+      - reason
+      properties:
+        id:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          minLength: 1
+        resolvedAt:
+          type: string
+          format: date-time
+    Balance:
+      type: object
+      additionalProperties: false
+      required:
+      - currency
+      - accruedMinor
+      - recordedPaymentsMinor
+      - outstandingMinor
+      - dueMinor
+      - openingStatus
+      properties:
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        accruedMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        recordedPaymentsMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        outstandingMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        dueMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        openingStatus:
+          type: string
+          enum:
+          - known
+          - unknown
+      example:
+        currency: EUR
+        accruedMinor: '38000'
+        recordedPaymentsMinor: '15000'
+        outstandingMinor: '23000'
+        dueMinor: '23000'
+        openingStatus: known
+    StatementEntry:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - engagementId
+      - kind
+      - currency
+      - deltaMinor
+      - effectiveAt
+      - postedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        engagementId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum:
+          - commission
+          - refund
+          - refund_reversal
+          - external_payment
+          - opening
+          - reversal
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        deltaMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        effectiveAt:
+          type: string
+          format: date-time
+        postedAt:
+          type: string
+          format: date-time
+        dueOn:
+          type: string
+          format: date
+        basisMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        rateBps:
+          type: integer
+          minimum: 0
+        agreementId:
+          type: string
+          format: uuid
+        customerLabel:
+          type: string
+          minLength: 1
+        source:
+          type: string
+          enum:
+          - stripe
+          - dodo
+          - whop
+          - revenuecat
+        sourceTransactionRef:
+          type: string
+          minLength: 1
+        relatedEntryId:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        recordedBy:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          minLength: 1
+    ExternalPayment:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - engagementId
+      - currency
+      - amountMinor
+      - paidOn
+      - recordedBy
+      - recordedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        engagementId:
+          type: string
+          format: uuid
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        amountMinor:
+          type: string
+          pattern: ^[1-9][0-9]*$
+        paidOn:
+          type: string
+          format: date
+        reference:
+          type: string
+          minLength: 1
+        recordedBy:
+          type: string
+          format: uuid
+        recordedAt:
+          type: string
+          format: date-time
+    OpeningBalance:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - engagementId
+      - currency
+      - amountMinor
+      - asOf
+      - note
+      properties:
+        id:
+          type: string
+          format: uuid
+        engagementId:
+          type: string
+          format: uuid
+        currency:
+          type: string
+          pattern: ^[A-Z]{3}$
+        amountMinor:
+          type: string
+          pattern: ^(0|-?[1-9][0-9]*)$
+        asOf:
+          type: string
+          format: date
+        note:
+          type: string
+          minLength: 1
+        acceptedAt:
+          type: string
+          format: date-time
+    Statement:
+      type: object
+      additionalProperties: false
+      required:
+      - engagementId
+      - asOf
+      - balances
+      - entries
+      properties:
+        engagementId:
+          type: string
+          format: uuid
+        asOf:
+          type: string
+          format: date-time
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Balance'
+        entries:
+          $ref: '#/components/schemas/EntryPage'
+    EngagementSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - engagement
+      - companyName
+      - productName
+      - balances
+      properties:
+        engagement:
+          $ref: '#/components/schemas/Engagement'
+        companyName:
+          type: string
+          minLength: 1
+        productName:
+          type: string
+          minLength: 1
+        repEmail:
+          type: string
+          format: email
+        nextDueOn:
+          type: string
+          format: date
+        balances:
+          type: array
+          items:
+            $ref: '#/components/schemas/Balance'
+    Error:
+      type: object
+      additionalProperties: false
+      required:
+      - code
+      - message
+      - requestId
+      properties:
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+        requestId:
+          type: string
+          minLength: 1
+        fieldErrors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+              minLength: 1
+    CompanyPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Company'
+        nextCursor:
+          type: string
+          minLength: 1
+    ProductPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        nextCursor:
+          type: string
+          minLength: 1
+    EngagementPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EngagementSummary'
+        nextCursor:
+          type: string
+          minLength: 1
+    AgreementPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgreementVersion'
+        nextCursor:
+          type: string
+          minLength: 1
+    ClaimPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Claim'
+        nextCursor:
+          type: string
+          minLength: 1
+    ConnectionPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connection'
+        nextCursor:
+          type: string
+          minLength: 1
+    EntryPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatementEntry'
+        nextCursor:
+          type: string
+          minLength: 1
+    ReviewPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReviewItem'
+        nextCursor:
+          type: string
+          minLength: 1
+    CoveragePage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoverageGap'
+        nextCursor:
+          type: string
+          minLength: 1
+    MappingPage:
+      type: object
+      additionalProperties: false
+      required:
+      - items
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductMapping'
+        nextCursor:
+          type: string
+          minLength: 1
+  responses:
+    E400:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E401:
+      description: Missing or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E403:
+      description: Action forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E404:
+      description: Resource not visible
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E409:
+      description: State or idempotency conflict
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E410:
+      description: Link expired or revoked
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E422:
+      description: Domain rule or integration setup error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E429:
+      description: Rate limited
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    E500:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
