@@ -24,7 +24,9 @@
     "pg": "^8.16.3",
     "@repharbor/contracts": "workspace:*",
     "swagger-ui-dist": "^5.36.0",
-    "nodemailer": "^8.0.0"
+    "nodemailer": "^8.0.0",
+    "stripe": "^23.2.0",
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",

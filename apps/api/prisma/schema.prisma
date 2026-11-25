@@ -13,6 +13,7 @@ model AppUser {
 
   sessions UserSession[]
   decisions Claim[]
+  resolvedReviews ReviewItem[]
   auditEvents AuditEvent[]
   idempotencyRecords IdempotencyRecord[]
   invitationsSent Invitation[] @relation("InvitationsSent")
@@ -31,6 +32,7 @@ model Company {
   timeZone String @map("time_zone")
   founders CompanyFounder[]
   products Product[]
+  connections Connection[]
   auditEvents AuditEvent[]
 
   @@map("company")
@@ -53,6 +55,8 @@ model Product {
   name      String
   company   Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   engagements Engagement[]
+  mappings ProductMapping[]
+  authorities SourceAuthority[]
 
   @@unique([companyId, id])
   @@map("product")
@@ -223,4 +227,123 @@ model AuditEvent {
   actor       AppUser? @relation(fields: [actorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("audit_event")
+}
+
+model Connection {
+  id              String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId       String @map("company_id") @db.Uuid
+  provider        String
+  environment     String
+  externalAccount String @map("external_account")
+  secretRef       String @map("secret_ref")
+  status          String
+  coverageFrom    DateTime? @map("coverage_from") @db.Timestamptz(6)
+  lastDeliveryAt  DateTime? @map("last_delivery_at") @db.Timestamptz(6)
+  reconciledAt    DateTime? @map("reconciled_at") @db.Timestamptz(6)
+  importCursor    String? @map("import_cursor")
+  company         Company @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  mappings        ProductMapping[]
+  authorities     SourceAuthority[]
+  events          InboundEvent[]
+  effects         SaleEffect[]
+  gaps            CoverageGap[]
+
+  @@unique([provider, environment, externalAccount])
+  @@unique([companyId, id])
+  @@map("connection")
+}
+
+model ProductMapping {
+  companyId       String @map("company_id") @db.Uuid
+  connectionId    String @map("connection_id") @db.Uuid
+  externalProduct String @map("external_product")
+  channel         String
+  productId       String @map("product_id") @db.Uuid
+  connection      Connection @relation(fields: [companyId, connectionId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  product         Product @relation(fields: [companyId, productId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([connectionId, externalProduct, channel])
+  @@map("product_mapping")
+}
+
+model SourceAuthority {
+  companyId    String @map("company_id") @db.Uuid
+  productId    String @map("product_id") @db.Uuid
+  channel      String
+  connectionId String @map("connection_id") @db.Uuid
+  environment  String
+  connection   Connection @relation(fields: [companyId, connectionId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  product      Product @relation(fields: [companyId, productId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([productId, channel, environment])
+  @@map("source_authority")
+}
+
+model InboundEvent {
+  id            String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId  String @map("connection_id") @db.Uuid
+  externalEvent String @map("external_event")
+  payload       Json
+  receivedAt    DateTime @default(now()) @map("received_at") @db.Timestamptz(6)
+  connection    Connection @relation(fields: [connectionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  effects       SaleEffect[]
+
+  @@unique([connectionId, externalEvent])
+  @@map("inbound_event")
+}
+
+model SaleEffect {
+  id                  String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId           String @map("company_id") @db.Uuid
+  connectionId        String @map("connection_id") @db.Uuid
+  transactionKey      String @map("transaction_key")
+  lineKey             String @map("line_key")
+  effectKey           String @map("effect_key")
+  kind                String
+  originalEffectId    String? @map("original_effect_id") @db.Uuid
+  originalExternalKey String? @map("original_external_key")
+  externalProduct     String @map("external_product")
+  externalCustomer    String @map("external_customer")
+  channel             String
+  occurredAt          DateTime @map("occurred_at") @db.Timestamptz(6)
+  currency            String @db.Char(3)
+  amountMinor         BigInt @map("amount_minor")
+  basisMinor          BigInt? @map("basis_minor")
+  sourceEventId       String? @map("source_event_id") @db.Uuid
+  disposition         String
+  connection          Connection @relation(fields: [companyId, connectionId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  sourceEvent         InboundEvent? @relation(fields: [sourceEventId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  originalEffect      SaleEffect? @relation("OriginalEffect", fields: [originalEffectId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  relatedEffects      SaleEffect[] @relation("OriginalEffect")
+  reviews             ReviewItem[]
+
+  @@unique([connectionId, transactionKey, lineKey, effectKey])
+  @@unique([companyId, id])
+  @@map("sale_effect")
+}
+
+model ReviewItem {
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  companyId   String @map("company_id") @db.Uuid
+  effectId    String @map("effect_id") @db.Uuid
+  reason      String
+  resolution  String?
+  resolvedBy  String? @map("resolved_by") @db.Uuid
+  resolvedAt  DateTime? @map("resolved_at") @db.Timestamptz(6)
+  effect      SaleEffect @relation(fields: [companyId, effectId], references: [companyId, id], onDelete: NoAction, onUpdate: NoAction)
+  resolver    AppUser? @relation(fields: [resolvedBy], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("review_item")
+}
+
+model CoverageGap {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  connectionId String @map("connection_id") @db.Uuid
+  startsAt     DateTime @map("starts_at") @db.Timestamptz(6)
+  endsAt       DateTime? @map("ends_at") @db.Timestamptz(6)
+  reason       String
+  resolvedAt   DateTime? @map("resolved_at") @db.Timestamptz(6)
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("coverage_gap")
 }

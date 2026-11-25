@@ -128,6 +128,7 @@ CREATE TABLE sale_effect (
   FOREIGN KEY(company_id,connection_id) REFERENCES connection(company_id,id),
   UNIQUE(connection_id,transaction_key,line_key,effect_key), UNIQUE(company_id,id)
 );
+CREATE INDEX effects_by_original ON sale_effect(connection_id,original_external_key) WHERE original_external_key IS NOT NULL;
 CREATE TABLE review_item (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(), company_id uuid NOT NULL, effect_id uuid NOT NULL,
   reason text NOT NULL, resolution text, resolved_by uuid REFERENCES app_user, resolved_at timestamptz,

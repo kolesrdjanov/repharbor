@@ -3,10 +3,12 @@ import { Logger, Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { createServer } from 'node:http';
 import { readConfiguration } from './config';
+import { IngestionWorker } from './integrations/ingestion-worker';
+import { Providers } from './integrations/providers';
 import { LoginMailWorker } from './auth/login-mail';
 import { Database, DatabaseModule } from './database';
 
-@Module({ imports: [DatabaseModule], providers: [LoginMailWorker] })
+@Module({ imports: [DatabaseModule], providers: [LoginMailWorker, Providers, IngestionWorker] })
 class WorkerModule {}
 
 async function bootstrap() {
